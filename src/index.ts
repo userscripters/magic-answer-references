@@ -20,6 +20,7 @@ type StacksButtonOptions = {
 };
 
 type StacksTableOptions = {
+    classes?: string[];
     rows: {
         cells: Array<string | Node>,
         data?: object;
@@ -286,10 +287,10 @@ window.addEventListener("load", async () => {
         id: string,
         options: StacksTableOptions
     ): [HTMLDivElement, HTMLTableElement] => {
-        const { headers, rows = [] } = options;
+        const { classes = [], headers, rows = [] } = options;
 
         const wrapper = document.createElement("div");
-        wrapper.classList.add("s-table-container");
+        wrapper.classList.add("s-table-container", ...classes);
 
         const table = document.createElement("table");
         table.classList.add("s-table");
@@ -395,8 +396,13 @@ window.addEventListener("load", async () => {
             `.${scriptName}.wmd-button > .svg-icon:hover {
                 color: var(--black-900);
             }`,
-            `#${scriptName}-current-posts td:first-child {
+            `.${scriptName}.s-table-container td:first-child {
                 cursor: pointer;
+            }`,
+            `.${scriptName}.s-table-container thead {
+                position: sticky;
+                top: -1px;
+                z-index: 9999;
             }`,
             `.s-table td {
                 border-bottom: 1px solid var(--bc-medium);
@@ -704,6 +710,7 @@ window.addEventListener("load", async () => {
         const posts = scrapePostsOnPage();
 
         const [refTableWrapper, refTable] = makeStacksTable(`${scriptName}-current-posts`, {
+            classes: [scriptName, "hmx2"],
             headers: ["Type", "Author", "Score", "Actions"],
             rows: [...posts].map(([id, info]) => {
                 return postInfoToTableRowConfig(id, info);
@@ -713,7 +720,7 @@ window.addEventListener("load", async () => {
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {
             placeholder: "Post link or text to search for",
             title: "Post Search",
-            classes: ["m0", "mt12"]
+            classes: ["m0", "mt16"]
         });
 
         const storage = Store.locateStorage();

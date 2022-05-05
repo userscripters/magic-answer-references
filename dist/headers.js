@@ -31,5 +31,5 @@
 // @run-at          document-start
 // @source          git+https://github.com/userscripters/magic-answer-references.git
 // @supportURL      https://github.com/userscripters/magic-answer-references/issues
-// @version         0.1.0
+// @version         1.0.0
 // ==/UserScript==

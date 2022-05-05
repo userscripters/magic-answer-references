@@ -31,7 +31,7 @@
 // @run-at          document-start
 // @source          git+https://github.com/userscripters/magic-answer-references.git
 // @supportURL      https://github.com/userscripters/magic-answer-references/issues
-// @version         0.1.0
+// @version         1.0.0
 // ==/UserScript==
 
 "use strict";
@@ -280,9 +280,10 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     return row;
                 };
                 makeStacksTable = function (id, options) {
-                    var headers = options.headers, _a = options.rows, rows = _a === void 0 ? [] : _a;
+                    var _a;
+                    var _b = options.classes, classes = _b === void 0 ? [] : _b, headers = options.headers, _c = options.rows, rows = _c === void 0 ? [] : _c;
                     var wrapper = document.createElement("div");
-                    wrapper.classList.add("s-table-container");
+                    (_a = wrapper.classList).add.apply(_a, __spreadArray(["s-table-container"], __read(classes), false));
                     var table = document.createElement("table");
                     table.classList.add("s-table");
                     table.id = id;
@@ -349,7 +350,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     var rules = [
                         ".".concat(scriptName, ".wmd-button > .svg-icon {\n                margin-top: 2px;\n                color: var(--black-600);\n            }"),
                         ".".concat(scriptName, ".wmd-button > .svg-icon:hover {\n                color: var(--black-900);\n            }"),
-                        "#".concat(scriptName, "-current-posts td:first-child {\n                cursor: pointer;\n            }"),
+                        "table.".concat(scriptName, " td:first-child {\n                cursor: pointer;\n            }"),
+                        "table.".concat(scriptName, " thead {\n                position: sticky;\n                top: -1px;\n                z-index: 9999;\n            }"),
                         ".s-table td {\n                border-bottom: 1px solid var(--bc-medium);\n            }"
                     ];
                     rules.forEach(function (rule) { return sheet.insertRule(rule); });
@@ -544,6 +546,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 if (!configForm) return [3, 6];
                 posts = scrapePostsOnPage();
                 _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
+                    classes: [scriptName, "hmx2"],
                     headers: ["Type", "Author", "Score", "Actions"],
                     rows: __spreadArray([], __read(posts), false).map(function (_a) {
                         var _b = __read(_a, 2), id = _b[0], info = _b[1];
@@ -553,7 +556,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
                     placeholder: "Post link or text to search for",
                     title: "Post Search",
-                    classes: ["m0", "mt12"]
+                    classes: ["m0", "mt16"]
                 }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
                 storage = Store.locateStorage();
                 store = new Store.default(scriptName, storage);

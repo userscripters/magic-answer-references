@@ -31,7 +31,7 @@
 // @run-at          document-start
 // @source          git+https://github.com/userscripters/magic-answer-references.git
 // @supportURL      https://github.com/userscripters/magic-answer-references/issues
-// @version         0.1.0
+// @version         1.0.0
 // ==/UserScript==
 
 "use strict";
@@ -177,9 +177,9 @@ window.addEventListener("load", async () => {
         return row;
     };
     const makeStacksTable = (id, options) => {
-        const { headers, rows = [] } = options;
+        const { classes = [], headers, rows = [] } = options;
         const wrapper = document.createElement("div");
-        wrapper.classList.add("s-table-container");
+        wrapper.classList.add("s-table-container", ...classes);
         const table = document.createElement("table");
         table.classList.add("s-table");
         table.id = id;
@@ -248,8 +248,13 @@ window.addEventListener("load", async () => {
             `.${scriptName}.wmd-button > .svg-icon:hover {
                 color: var(--black-900);
             }`,
-            `#${scriptName}-current-posts td:first-child {
+            `table.${scriptName} td:first-child {
                 cursor: pointer;
+            }`,
+            `table.${scriptName} thead {
+                position: sticky;
+                top: -1px;
+                z-index: 9999;
             }`,
             `.s-table td {
                 border-bottom: 1px solid var(--bc-medium);
@@ -424,6 +429,7 @@ window.addEventListener("load", async () => {
     if (configForm) {
         const posts = scrapePostsOnPage();
         const [refTableWrapper, refTable] = makeStacksTable(`${scriptName}-current-posts`, {
+            classes: [scriptName, "hmx2"],
             headers: ["Type", "Author", "Score", "Actions"],
             rows: [...posts].map(([id, info]) => {
                 return postInfoToTableRowConfig(id, info);
@@ -432,7 +438,7 @@ window.addEventListener("load", async () => {
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {
             placeholder: "Post link or text to search for",
             title: "Post Search",
-            classes: ["m0", "mt12"]
+            classes: ["m0", "mt16"]
         });
         const storage = Store.locateStorage();
         const store = new Store.default(scriptName, storage);
