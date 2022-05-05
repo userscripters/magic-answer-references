@@ -769,7 +769,7 @@ window.addEventListener("load", async () => {
                 }
 
                 const { dataset: { body } } = row;
-                row.hidden = !body?.includes(value);
+                row.hidden = !body?.toLowerCase().includes(value.toLowerCase());
             }
         });
 
