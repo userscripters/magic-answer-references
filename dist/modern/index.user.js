@@ -160,7 +160,7 @@ window.addEventListener("load", async () => {
         close.type = "button";
         close.dataset.action = "s-modal#hide";
         const closeIcon = makeStacksIcon("iconClearSm", "M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41z");
-        makeDraggable(id);
+        makeDraggable(doc.id);
         close.append(closeIcon);
         doc.append(title, form, close);
         wrap.append(doc);
@@ -247,6 +247,9 @@ window.addEventListener("load", async () => {
             }`,
             `.${scriptName}.wmd-button > .svg-icon:hover {
                 color: var(--black-900);
+            }`,
+            `#${scriptName}-current-posts td:first-child {
+                cursor: pointer;
             }`,
             `.s-table td {
                 border-bottom: 1px solid var(--bc-medium);
@@ -421,7 +424,7 @@ window.addEventListener("load", async () => {
     if (configForm) {
         const posts = scrapePostsOnPage();
         const [refTableWrapper, refTable] = makeStacksTable(`${scriptName}-current-posts`, {
-            headers: ["Type", "Author", "Votes", "Actions"],
+            headers: ["Type", "Author", "Score", "Actions"],
             rows: [...posts].map(([id, info]) => {
                 return postInfoToTableRowConfig(id, info);
             })
@@ -479,7 +482,7 @@ window.addEventListener("load", async () => {
                     continue;
                 }
                 const { dataset: { body } } = row;
-                row.hidden = !(body === null || body === void 0 ? void 0 : body.includes(value));
+                row.hidden = !(body === null || body === void 0 ? void 0 : body.toLowerCase().includes(value.toLowerCase()));
             }
         });
         configForm.append(refTableWrapper, searchWrapper);

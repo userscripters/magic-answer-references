@@ -263,7 +263,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     close.type = "button";
                     close.dataset.action = "s-modal#hide";
                     var closeIcon = makeStacksIcon("iconClearSm", "M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41z");
-                    makeDraggable(id);
+                    makeDraggable(doc.id);
                     close.append(closeIcon);
                     doc.append(title, form, close);
                     wrap.append(doc);
@@ -349,6 +349,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     var rules = [
                         ".".concat(scriptName, ".wmd-button > .svg-icon {\n                margin-top: 2px;\n                color: var(--black-600);\n            }"),
                         ".".concat(scriptName, ".wmd-button > .svg-icon:hover {\n                color: var(--black-900);\n            }"),
+                        "#".concat(scriptName, "-current-posts td:first-child {\n                cursor: pointer;\n            }"),
                         ".s-table td {\n                border-bottom: 1px solid var(--bc-medium);\n            }"
                     ];
                     rules.forEach(function (rule) { return sheet.insertRule(rule); });
@@ -543,7 +544,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 if (!configForm) return [3, 6];
                 posts = scrapePostsOnPage();
                 _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
-                    headers: ["Type", "Author", "Votes", "Actions"],
+                    headers: ["Type", "Author", "Score", "Actions"],
                     rows: __spreadArray([], __read(posts), false).map(function (_a) {
                         var _b = __read(_a, 2), id = _b[0], info = _b[1];
                         return postInfoToTableRowConfig(id, info);
@@ -615,7 +616,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                             continue;
                                         }
                                         body = row.dataset.body;
-                                        row.hidden = !(body === null || body === void 0 ? void 0 : body.includes(value));
+                                        row.hidden = !(body === null || body === void 0 ? void 0 : body.toLowerCase().includes(value.toLowerCase()));
                                     }
                                 }
                                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
