@@ -562,7 +562,10 @@ window.addEventListener("load", async () => {
                     actionBtnConfig
                 );
 
-                actionBtn.addEventListener("click", () => insertPostReference(postTextInput, info));
+                actionBtn.addEventListener("click", (ev) => {
+                    ev.preventDefault(); // otherwise, clicking will scroll
+                    insertPostReference(postTextInput, info);
+                });
 
                 return [postType, author, votes, actionBtn];
             })

@@ -442,7 +442,10 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                 window.scrollTo(left + scrollX, top + scrollY);
                             });
                             var actionBtn = makeStacksButton("".concat(scriptName, "-ref-").concat(id), "ref", actionBtnConfig_1);
-                            actionBtn.addEventListener("click", function () { return insertPostReference(postTextInput, info); });
+                            actionBtn.addEventListener("click", function (ev) {
+                                ev.preventDefault();
+                                insertPostReference(postTextInput, info);
+                            });
                             return [postType, author, votes, actionBtn];
                         })
                     });

@@ -366,7 +366,10 @@ window.addEventListener("load", async () => {
                     window.scrollTo(left + scrollX, top + scrollY);
                 });
                 const actionBtn = makeStacksButton(`${scriptName}-ref-${id}`, "ref", actionBtnConfig);
-                actionBtn.addEventListener("click", () => insertPostReference(postTextInput, info));
+                actionBtn.addEventListener("click", (ev) => {
+                    ev.preventDefault();
+                    insertPostReference(postTextInput, info);
+                });
                 return [postType, author, votes, actionBtn];
             })
         });
