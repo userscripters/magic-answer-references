@@ -35,6 +35,7 @@ type PostInfo = {
     body: string;
     container?: HTMLElement;
     id: string;
+    link: string;
     type: PostType;
     votes: string;
 };
@@ -488,7 +489,9 @@ window.addEventListener("load", async () => {
         const bodyElem = container.querySelector(".js-post-body");
         const body = bodyElem?.textContent?.trim() || "";
 
-        const info: PostInfo = { body, container, id, type, votes };
+        const link = `${location.origin}/${type === "answer" ? "a" : "q"}/${id}`;
+
+        const info: PostInfo = { body, container, id, link, type, votes };
 
         const authorLink = container.querySelector<HTMLAnchorElement>("[itemprop=author] a");
         if (authorLink) {
@@ -537,15 +540,13 @@ window.addEventListener("load", async () => {
         const { selectionStart, selectionEnd, value } = input;
         const isCollapsed = selectionStart === selectionEnd;
 
-        const { authorLink, authorName, id, type } = info;
+        const { authorLink, authorName, link, type } = info;
 
         const before = value.slice(0, selectionStart + 1);
         const after = value.slice(selectionEnd - 1);
 
-        const short = type === "answer" ? "a" : "q";
-        const postLink = `${location.origin}/${short}/${id}`;
         const authorRef = authorLink ? `[${authorName}](${authorLink})` : authorName;
-        const postRef = `${authorRef ? `${authorRef}'s ` : ""}[${type}](${postLink})`;
+        const postRef = `${authorRef ? `${authorRef}'s ` : ""}[${type}](${link})`;
 
         input.value = isCollapsed ? value + postRef : before + postRef + after;
         input.dispatchEvent(new Event("input"));
@@ -742,11 +743,12 @@ window.addEventListener("load", async () => {
 
                 apiPostCache.set(id, post);
 
-                const { body = "", post_type, score, owner } = post;
+                const { body = "", link, post_type, score, owner } = post;
 
                 const { cells, data } = postInfoToTableRowConfig(id, {
                     body,
                     id,
+                    link,
                     authorLink: owner?.link,
                     authorName: owner?.display_name,
                     type: post_type,

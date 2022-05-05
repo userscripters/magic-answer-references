@@ -396,7 +396,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     }
                     var bodyElem = container.querySelector(".js-post-body");
                     var body = ((_b = bodyElem === null || bodyElem === void 0 ? void 0 : bodyElem.textContent) === null || _b === void 0 ? void 0 : _b.trim()) || "";
-                    var info = { body: body, container: container, id: id, type: type, votes: votes };
+                    var link = "".concat(location.origin, "/").concat(type === "answer" ? "a" : "q", "/").concat(id);
+                    var info = { body: body, container: container, id: id, link: link, type: type, votes: votes };
                     var authorLink = container.querySelector("[itemprop=author] a");
                     if (authorLink) {
                         info.authorLink = authorLink.href;
@@ -427,13 +428,11 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 insertPostReference = function (input, info) {
                     var selectionStart = input.selectionStart, selectionEnd = input.selectionEnd, value = input.value;
                     var isCollapsed = selectionStart === selectionEnd;
-                    var authorLink = info.authorLink, authorName = info.authorName, id = info.id, type = info.type;
+                    var authorLink = info.authorLink, authorName = info.authorName, link = info.link, type = info.type;
                     var before = value.slice(0, selectionStart + 1);
                     var after = value.slice(selectionEnd - 1);
-                    var short = type === "answer" ? "a" : "q";
-                    var postLink = "".concat(location.origin, "/").concat(short, "/").concat(id);
                     var authorRef = authorLink ? "[".concat(authorName, "](").concat(authorLink, ")") : authorName;
-                    var postRef = "".concat(authorRef ? "".concat(authorRef, "'s ") : "", "[").concat(type, "](").concat(postLink, ")");
+                    var postRef = "".concat(authorRef ? "".concat(authorRef, "'s ") : "", "[").concat(type, "](").concat(link, ")");
                     input.value = isCollapsed ? value + postRef : before + postRef + after;
                     input.dispatchEvent(new Event("input"));
                     document.dispatchEvent(new CustomEvent("".concat(scriptName, "-close-config")));
@@ -566,7 +565,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 _c.sent();
                 apiPostCache_1 = new Map();
                 searchInput_1.addEventListener("input", function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var value, id, postRow, post, _a, body, post_type, score, owner, _b, cells, data, rows, rows_1, rows_1_1, row, body;
+                    var value, id, postRow, post, _a, body, link, post_type, score, owner, _b, cells, data, rows, rows_1, rows_1_1, row, body;
                     var e_1, _c;
                     return __generator(this, function (_d) {
                         switch (_d.label) {
@@ -592,10 +591,11 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                 if (!post)
                                     return [2];
                                 apiPostCache_1.set(id, post);
-                                _a = post.body, body = _a === void 0 ? "" : _a, post_type = post.post_type, score = post.score, owner = post.owner;
+                                _a = post.body, body = _a === void 0 ? "" : _a, link = post.link, post_type = post.post_type, score = post.score, owner = post.owner;
                                 _b = postInfoToTableRowConfig(id, {
                                     body: body,
                                     id: id,
+                                    link: link,
                                     authorLink: owner === null || owner === void 0 ? void 0 : owner.link,
                                     authorName: owner === null || owner === void 0 ? void 0 : owner.display_name,
                                     type: post_type,
