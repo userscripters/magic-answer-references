@@ -8,6 +8,13 @@
 | License | [GPL-3.0-or-later](https://spdx.org/licenses/GPL-3.0-or-later) |
 | Version | 2.1.0 |
 
+Referencing other posts properly by hand is tedious: one has to link to users' profiles as usernames are subject to change any time, as well as to their post. Magic Answer References userscript makes all this as easy as clicking a button! It adds a button to the editor (right next to the Stacks Snippet one) that opens a referencing modal.
+
+The modal contains a *sortable* table with brief information about the question and every answer on the current page with a full-text case-insensitive search input below for filtering.
+
+If one wants to reference a post not from another page or even another Stack Exchange site, they can simply paste a link to the post in the search modal, and the post will be added to the table (don't forget to provide an [API key](https://stackapps.com/apps/oauth/register) for higher quota).
+# Screenshots
+![https://i.stack.imgur.com/2JqYm.png](https://i.stack.imgur.com/2JqYm.png)
 
 # Support
 
