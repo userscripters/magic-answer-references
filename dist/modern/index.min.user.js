@@ -1,21 +1,39 @@
 // ==UserScript==
-// @author           Jane Doe <jane@doe.com>
-// @contributors     John Doe <john@doe.com>
-// @description      template repository for userscripters' projects
-// @grant            none
-// @homepage         https://github.com/userscripters/template#readme
-// @match            https://*.askubuntu.com/*
-// @match            https://*.mathoverflow.net/*
-// @match            https://*.serverfault.com/*
-// @match            https://*.stackapps.com/*
-// @match            https://*.stackexchange.com/*
-// @match            https://*.stackoverflow.com/*
-// @name             Template
-// @namespace        userscripters
-// @run-at           document-start
-// @source           git+https://github.com/userscripters/template.git
-// @supportURL       https://github.com/userscripters/template/issues
-// @version          0.1.0
+// @author          Oleg Valter <oleg.a.valter@gmail.com>
+// @description     Make referencing other answers easier
+// @grant           none
+// @homepage        https://github.com/userscripters/magic-answer-references#readme
+// @match           https://*.stackexchange.com/questions/*
+// @match           https://askubuntu.com/questions/*
+// @match           https://es.meta.stackoverflow.com/questions/*
+// @match           https://es.stackoverflow.com/questions/*
+// @match           https://ja.meta.stackoverflow.com/questions/*
+// @match           https://ja.stackoverflow.com/questions/*
+// @match           https://mathoverflow.net/questions/*
+// @match           https://meta.askubuntu.com/questions/*
+// @match           https://meta.mathoverflow.net/questions/*
+// @match           https://meta.serverfault.com/questions/*
+// @match           https://meta.stackoverflow.com/questions/*
+// @match           https://meta.superuser.com/questions/*
+// @match           https://pt.meta.stackoverflow.com/questions/*
+// @match           https://pt.stackoverflow.com/questions/*
+// @match           https://ru.meta.stackoverflow.com/questions/*
+// @match           https://ru.stackoverflow.com/questions/*
+// @match           https://serverfault.com/questions/*
+// @match           https://stackapps.com/questions/*
+// @match           https://stackoverflow.com/questions/*
+// @match           https://superuser.com/questions/*
+// @name            Magic Answer References
+// @namespace       userscripters
+// @run-at          document-start
+// @source          git+https://github.com/userscripters/magic-answer-references.git
+// @supportURL      https://github.com/userscripters/magic-answer-references/issues
+// @version         0.1.0
 // ==/UserScript==
 
-"use strict";const main=()=>Promise.resolve("Hello world!");(async()=>{var o=await main();console.log(o)})(),(()=>{var o=document.getElementById("test");o&&Stacks.showModal(o)})(window);
+"use strict";window.addEventListener("load",async()=>{const r="magic-answer-references";var e=(a,d=document)=>new Promise(t=>{var e=d.querySelector(a);e&&t(e);const n=new MutationObserver(()=>{var e=d.querySelector(a);e&&(n.disconnect(),t(e))});n.observe(d,{subtree:!0,childList:!0,attributes:!0})});const l=(e,t,n="http://www.w3.org/2000/svg")=>{const a=document.createElementNS(n,"svg"),d=(a.classList.add("svg-icon",e),a.setAttribute("width","18"),a.setAttribute("height","18"),a.setAttribute("viewBox","0 0 18 18"),a.setAttribute("aria-hidden","true"),document.createElementNS(n,"path"));return d.setAttribute("d",t),a.append(d),a};const a=(e,t)=>{var n=e.querySelector(".js-vote-count"),n=(null==(n=null==n?void 0:n.textContent)?void 0:n.trim())||"0",{answerid:a,questionid:d}=e["dataset"],a="answer"===t?a:d;if(a){const o={container:e,id:a,type:t,votes:n};d=e.querySelector("[itemprop=author] a");return d&&(o.authorLink=d.href,o.authorName=null==(a=d.textContent)?void 0:a.trim()),d||(t=e.querySelector("[itemprop=name]"),o.authorName=null==(n=null==t?void 0:t.textContent)?void 0:n.trim()),o}console.debug(`[${r}] post is missing an id`)};var t=document.getElementById("post-editor");if(t)if(await e("#wmd-button-row")){const n=await e("#wmd-snippet-button");if(n){const d=((e,t)=>{var n="modal-title";const a=document.createElement("aside"),d=(a.classList.add("s-modal"),a.id=e,a.tabIndex=-1,a.setAttribute("role","dialog"),a.setAttribute("aria-labelledby",n),a.setAttribute("aria-describeddy","modal-description"),a.setAttribute("aria-hidden","true"),a)["dataset"],o=(d.sModalTarget="modal",d.controller="s-modal",document.createElement("div")),r=(o.classList.add("s-modal--dialog","ps-relative","hmx6","wmn50"),o.setAttribute("role","document"),o.id=e+"-document",o.draggable=!0,document.createElement("h1")),s=(r.classList.add("s-modal--header"),r.id=n,r.textContent=t,document.createElement("form")),c=(s.classList.add("s-modal--body","d-flex","flex__allcells6","fw-wrap","gs16"),document.createElement("button"));c.classList.add("s-modal--close","s-btn","s-btn__muted"),c.type="button",c.dataset.action="s-modal#hide";n=l("iconClearSm","M12 3.41 10.59 2 7 5.59 3.41 2 2 3.41 5.59 7 2 10.59 3.41 12 7 8.41 10.59 12 12 10.59 8.41 7 12 3.41z");{var m=e;document.addEventListener("dragstart",({dataTransfer:e})=>{const t=document.createElement("img");t.src="data:image/png;base64,AAAAAA==",null!=e&&e.setDragImage(t,0,0)});let l=0,i=0,t=0,n=!1;const u=({clientX:n,clientY:a})=>{var d,o=document.getElementById(m);if(o){l=l||n,i=i||a;let{top:e,left:t}=o["style"];e||t||(d=window.getComputedStyle(o),e=d.top,t=d.left);const r=n-l,s=a-i;if(![r,s].map(Math.abs).some(e=>500<e)){const c=o["style"];c.left=parseInt(t)+r+"px",c.top=parseInt(e)+s+"px",l=n,i=a}}};document.addEventListener("dragstart",e=>{e=e.target;e===document.getElementById(m)&&(n=!0)}),document.addEventListener("dragend",({target:e})=>{e===document.getElementById(m)&&(n=!1,l=0,i=0)}),document.addEventListener("drag",e=>{if(!(3<=(t=e.clientX?0:t<3?t+1:3))&&n)return u(e)}),document.addEventListener("dragover",e=>{if(n&&e.preventDefault(),!(t<3)&&n)return u(e)})}return c.append(n),o.append(r,s,c),a.append(o),a})(r+"-config","Reference a Post"),o=d.querySelector("form");if(o){t=(()=>{const t=new Map,e=document.querySelectorAll(".answer"),n=(e.forEach(e=>{e=a(e,"answer");e&&t.set(e.id,e)}),document.querySelectorAll(".question"));return n.forEach(e=>{e=a(e,"question");e&&t.set(e.id,e)}),t})(),e=((e,t)=>{const{headers:n,cellGrid:a=[]}=t,d=document.createElement("div"),o=(d.classList.add("s-table-container"),document.createElement("table")),r=(o.classList.add("s-table"),o.id=e,document.createElement("thead")),s=document.createElement("tr"),c=(s.append(...n.map(e=>{const t=document.createElement("th");return t.scope="col",t.append(e),t})),document.createElement("tbody"));return c.append(...a.map(e=>{const t=document.createElement("tr");return t.append(...e.map(e=>{const t=document.createElement("td");return t.append(e),t})),t})),r.append(s),o.append(r,c),d.append(o),d})(r+"-current-posts",{headers:["Type","Author","Votes"],cellGrid:[...t].map(([,e])=>{const{authorName:t,authorLink:n,container:d,type:a,votes:o}=e;e=n&&t?((e,t)=>{const n=document.createElement("a");return n.href=e,n.title=n.textContent=t,n.target="_blank",n})(n,t):t||"";const r=document.createElement("span");return r.textContent=a,r.addEventListener("click",()=>{var{scrollX:e,scrollY:t}=window,{top:n,left:a}=d.getBoundingClientRect();window.scrollTo(a+e,n+t)}),[r,e,o]})});const[c,i]=((e,t)=>{var{classes:t=[],placeholder:n="",title:a="",value:d=""}=t;const o=document.createElement("div"),r=(o.classList.add("d-flex","gs4","gsy","fd-column",...t),document.createElement("div")),s=(r.classList.add("d-flex","ps-relative"),document.createElement("input"));if(s.classList.add("s-input"),s.id=e,s.type="text",s.placeholder=n,s.value=d,r.append(s),o.append(r),a){const c=document.createElement("div"),l=(c.classList.add("flex--item"),document.createElement("label"));return l.classList.add("d-block","s-label"),l.htmlFor=e,l.textContent=a,c.append(l),o.prepend(c),[o,s,l]}return[o,s]})(r+"-search",{placeholder:"Post link or text to search for",title:"Post Search"});i.addEventListener("change",()=>{}),o.append(e,c)}document.body.append(d);const s=((e,t,n,a,d)=>{const o=document.createElement("li");return o.classList.add("wmd-button",r),o.id=e,o.title=a,o.append(l(t,n)),o.addEventListener("click",d),o})(r+"-reference","iconMergeSm","M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z","Reference a post",()=>{});s.addEventListener("click",()=>Stacks.showModal(d)),n.after(s);{t=document.createElement("style");document.head.append(t);const m=t["sheet"];if(m){const u=[`.${r}.wmd-button > .svg-icon {
+                margin-top: 2px;
+                color: var(--black-600);
+            }`,`.${r}.wmd-button > .svg-icon:hover {
+                color: var(--black-900);
+            }`];u.forEach(e=>m.insertRule(e))}}}else console.debug(`[${r}] missing editor snippet button`)}else console.debug(`[${r}] missing editor menu`);else console.debug(`[${r}] missing post editor`)},{once:!0});
