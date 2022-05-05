@@ -476,6 +476,34 @@ window.addEventListener("load", async () => {
         return posts;
     };
 
+    /**
+     * @summary inserts post reference
+     * @param input editor input
+     * @param info post info
+     */
+    const insertPostReference = (
+        input: HTMLTextAreaElement,
+        info: PostInfo
+    ) => {
+        const { selectionStart, selectionEnd, value } = input;
+        const isCollapsed = selectionStart === selectionEnd;
+
+        const { authorLink, authorName, id, type } = info;
+
+        const before = value.slice(0, selectionStart + 1);
+        const after = value.slice(selectionEnd - 1);
+
+        const short = type === "answer" ? "a" : "q";
+        const postLink = `https://${location.origin}/${short}/${id}`;
+        const authorRef = authorLink ? `[${authorName}](${authorLink})` : authorName;
+        const postRef = `${authorRef ? `${authorRef}'s ` : ""}[${type}](${postLink})`;
+
+        input.value = isCollapsed ? value + postRef : before + postRef + after;
+        input.dispatchEvent(new Event("input"));
+
+        document.dispatchEvent(new CustomEvent(`${scriptName}-close-config`));
+    };
+
     const editor = document.getElementById("post-editor");
     if (!editor) {
         console.debug(`[${scriptName}] missing post editor`);
