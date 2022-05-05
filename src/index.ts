@@ -255,6 +255,27 @@ window.addEventListener("load", async () => {
     };
 
     /**
+     * @summary makes a Stacks table row
+     * @param cells cell content to append
+     * @param data optional dataset items
+     */
+    const makeStacksTableRow = (
+        cells: Array<string | Node>,
+        data?: object
+    ) => {
+        const row = document.createElement("tr");
+        Object.assign(row.dataset, data || {});
+
+        row.append(...cells.map((content) => {
+            const td = document.createElement("td");
+            td.append(content);
+            return td;
+        }));
+
+        return row;
+    };
+
+    /**
      * @see https://stackoverflow.design/product/components/tables/
      * @summary makes a Stacks table
      * @param id table id
@@ -284,16 +305,7 @@ window.addEventListener("load", async () => {
 
         const body = document.createElement("tbody");
         body.append(...rows.map(({ cells, data }) => {
-            const row = document.createElement("tr");
-            Object.assign(row.dataset, data);
-
-            row.append(...cells.map((content) => {
-                const td = document.createElement("td");
-                td.append(content);
-                return td;
-            }));
-
-            return row;
+            return makeStacksTableRow(cells, data);
         }));
 
         head.append(headRow);
