@@ -643,13 +643,9 @@ window.addEventListener("load", async () => {
         "iconMergeSm",
         "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z",
         "Reference a post",
-        () => {
-            // load all as suggestions
-            // upon receiving a URL, get the post from the API and add to suggestions
-        }
+        () => Stacks.showModal(configModal)
     );
 
-    refBtn.addEventListener("click", () => Stacks.showModal(configModal));
     snippetBtn.after(refBtn);
 
     document.addEventListener(

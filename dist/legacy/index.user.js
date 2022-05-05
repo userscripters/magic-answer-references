@@ -105,7 +105,7 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, isPostLink_1, refBtn;
+    var scriptName, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, postLinkExpr, isPostLink, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, refBtn;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -319,6 +319,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     var rules = [
                         ".".concat(scriptName, ".wmd-button > .svg-icon {\n                margin-top: 2px;\n                color: var(--black-600);\n            }"),
                         ".".concat(scriptName, ".wmd-button > .svg-icon:hover {\n                color: var(--black-900);\n            }"),
+                        ".s-table td {\n                border-bottom: 1px solid var(--bc-medium);\n            }"
                     ];
                     rules.forEach(function (rule) { return sheet.insertRule(rule); });
                 };
@@ -407,6 +408,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     input.dispatchEvent(new Event("input"));
                     document.dispatchEvent(new CustomEvent("".concat(scriptName, "-close-config")));
                 };
+                postLinkExpr = new RegExp("^https:.+?\\/(?:q(?:uestions)?|a)\\/\\d+(?:\\/|$)");
+                isPostLink = function (text) { return postLinkExpr.test(text); };
                 editor = document.getElementById("post-editor");
                 if (!editor) {
                     console.debug("[".concat(scriptName, "] missing post editor"));
@@ -473,21 +476,25 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                         title: "Post Search",
                         classes: ["m0", "mt12"]
                     }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
-                    isPostLink_1 = function (_text) { return false; };
                     searchInput_1.addEventListener("input", function () {
                         var e_1, _a;
                         var value = searchInput_1.value;
-                        if (!value)
-                            return;
-                        if (isPostLink_1(value)) {
+                        if (isPostLink(value)) {
+                            console.debug("LINK!", value);
                             return;
                         }
                         var rows = refTable_1.rows;
                         try {
                             for (var rows_1 = __values(rows), rows_1_1 = rows_1.next(); !rows_1_1.done; rows_1_1 = rows_1.next()) {
                                 var row = rows_1_1.value;
+                                if (row === rows[0])
+                                    continue;
+                                if (!value) {
+                                    row.hidden = false;
+                                    continue;
+                                }
                                 var body = row.dataset.body;
-                                row.hidden = !!(body === null || body === void 0 ? void 0 : body.includes(value));
+                                row.hidden = !(body === null || body === void 0 ? void 0 : body.includes(value));
                             }
                         }
                         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -501,9 +508,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     configForm.append(refTableWrapper, searchWrapper);
                 }
                 document.body.append(configModal);
-                refBtn = makeEditorButton("".concat(scriptName, "-reference"), "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", function () {
-                });
-                refBtn.addEventListener("click", function () { return Stacks.showModal(configModal); });
+                refBtn = makeEditorButton("".concat(scriptName, "-reference"), "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", function () { return Stacks.showModal(configModal); });
                 snippetBtn.after(refBtn);
                 document.addEventListener("".concat(scriptName, "-close-config"), function () { return Stacks.hideModal(configModal); });
                 appendStyles();

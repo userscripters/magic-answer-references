@@ -240,6 +240,9 @@ window.addEventListener("load", async () => {
             `.${scriptName}.wmd-button > .svg-icon:hover {
                 color: var(--black-900);
             }`,
+            `.s-table td {
+                border-bottom: 1px solid var(--bc-medium);
+            }`
         ];
         rules.forEach((rule) => sheet.insertRule(rule));
     };
@@ -326,6 +329,8 @@ window.addEventListener("load", async () => {
         input.dispatchEvent(new Event("input"));
         document.dispatchEvent(new CustomEvent(`${scriptName}-close-config`));
     };
+    const postLinkExpr = new RegExp("^https:.+?\\/(?:q(?:uestions)?|a)\\/\\d+(?:\\/|$)");
+    const isPostLink = (text) => postLinkExpr.test(text);
     const editor = document.getElementById("post-editor");
     if (!editor) {
         console.debug(`[${scriptName}] missing post editor`);
@@ -385,26 +390,28 @@ window.addEventListener("load", async () => {
             title: "Post Search",
             classes: ["m0", "mt12"]
         });
-        const isPostLink = (_text) => false;
         searchInput.addEventListener("input", () => {
             const { value } = searchInput;
-            if (!value)
-                return;
             if (isPostLink(value)) {
+                console.debug("LINK!", value);
                 return;
             }
             const { rows } = refTable;
             for (const row of rows) {
+                if (row === rows[0])
+                    continue;
+                if (!value) {
+                    row.hidden = false;
+                    continue;
+                }
                 const { dataset: { body } } = row;
-                row.hidden = !!(body === null || body === void 0 ? void 0 : body.includes(value));
+                row.hidden = !(body === null || body === void 0 ? void 0 : body.includes(value));
             }
         });
         configForm.append(refTableWrapper, searchWrapper);
     }
     document.body.append(configModal);
-    const refBtn = makeEditorButton(`${scriptName}-reference`, "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", () => {
-    });
-    refBtn.addEventListener("click", () => Stacks.showModal(configModal));
+    const refBtn = makeEditorButton(`${scriptName}-reference`, "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", () => Stacks.showModal(configModal));
     snippetBtn.after(refBtn);
     document.addEventListener(`${scriptName}-close-config`, () => Stacks.hideModal(configModal));
     appendStyles();
