@@ -529,6 +529,17 @@ window.addEventListener("load", async () => {
         document.dispatchEvent(new CustomEvent(`${scriptName}-close-config`));
     };
 
+    // https://regex101.com/r/Zknsuv/3
+    const postLinkExpr = new RegExp(
+        "^https:.+?\\/(?:q(?:uestions)?|a)\\/\\d+(?:\\/|$)"
+    );
+
+    /**
+     * @summary checks if a given text is a link to a post on Stack Exchange
+     * @param text string to check
+     */
+    const isPostLink = (text: string) => postLinkExpr.test(text);
+
     const editor = document.getElementById("post-editor");
     if (!editor) {
         console.debug(`[${scriptName}] missing post editor`);
