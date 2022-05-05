@@ -4,4 +4,4 @@ generate-readme \
 The modal contains a *sortable* table with brief information about the question and every answer on the current page with a full-text case-insensitive search input below for filtering.
 
 If one wants to reference a post not from another page or even another Stack Exchange site, they can simply paste a link to the post in the search modal, and the post will be added to the table." \
-    --screenshot "https://i.stack.imgur.com/2JqYm.png"
+    --screenshot "https://i.stack.imgur.com/0kghf.png"

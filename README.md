@@ -14,7 +14,7 @@ The modal contains a *sortable* table with brief information about the question 
 
 If one wants to reference a post not from another page or even another Stack Exchange site, they can simply paste a link to the post in the search modal, and the post will be added to the table.
 # Screenshots
-![https://i.stack.imgur.com/2JqYm.png](https://i.stack.imgur.com/2JqYm.png)
+![https://i.stack.imgur.com/0kghf.png](https://i.stack.imgur.com/0kghf.png)
 
 # Support
 
