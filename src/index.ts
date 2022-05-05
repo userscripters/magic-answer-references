@@ -24,7 +24,8 @@ type StacksTableOptions = {
     rows: {
         cells: Array<string | Node>,
         data?: object;
-    }[]
+    }[];
+    sortable?: boolean;
     headers: Array<string | Node>;
 };
 
@@ -81,24 +82,42 @@ window.addEventListener("load", async () => {
         });
     };
 
+    type StacksIconOptions = {
+        classes?: string[];
+        hidden?: boolean;
+        namespace?: string;
+        width?: number;
+        height?: number;
+    };
+
     /**
      * @see https://stackoverflow.design/product/resources/icons/
      * @summary makes Stacks 18 x 18 icon
      * @param name icon name
      * @param pathConfig <path> string
-     * @param namespace optional namespace (SVG by default)
+     * @param options icon configuration
      */
     const makeStacksIcon = (
         name: string,
         pathConfig: string,
-        namespace = "http://www.w3.org/2000/svg"
+        options: StacksIconOptions = {}
     ) => {
+        const {
+            classes = [],
+            hidden = false,
+            namespace = "http://www.w3.org/2000/svg",
+            height = 18,
+            width = 18
+        } = options;
+
         const svg = document.createElementNS(namespace, "svg");
-        svg.classList.add("svg-icon", name);
-        svg.setAttribute("width", "18");
-        svg.setAttribute("height", "18");
-        svg.setAttribute("viewBox", "0 0 18 18");
+        svg.classList.add("svg-icon", name, ...classes);
+        svg.setAttribute("width", width.toString());
+        svg.setAttribute("height", height.toString());
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
         svg.setAttribute("aria-hidden", "true");
+
+        if (hidden) svg.classList.add("d-none");
 
         const path = document.createElementNS(namespace, "path");
         path.setAttribute("d", pathConfig);
@@ -287,7 +306,7 @@ window.addEventListener("load", async () => {
         id: string,
         options: StacksTableOptions
     ): [HTMLDivElement, HTMLTableElement] => {
-        const { classes = [], headers, rows = [] } = options;
+        const { classes = [], headers, rows = [], sortable = false } = options;
 
         const wrapper = document.createElement("div");
         wrapper.classList.add("s-table-container", ...classes);
@@ -296,12 +315,69 @@ window.addEventListener("load", async () => {
         table.classList.add("s-table");
         table.id = id;
 
+        if (sortable) {
+            table.classList.add("s-table__sortable");
+            table.dataset.controller = "s-table";
+        }
+
         const head = document.createElement("thead");
         const headRow = document.createElement("tr");
         headRow.append(...headers.map((hdr) => {
             const th = document.createElement("th");
             th.scope = "col";
             th.append(hdr);
+
+            if (sortable) {
+                const { dataset } = th;
+                dataset.action = "click->s-table#sort";
+                dataset.sTableTarget = "column";
+
+                const sharedOptions = {
+                    width: 14,
+                    height: 14
+                };
+
+                const unsorted = makeStacksIcon(
+                    "iconArrowUpDownSm",
+                    "m7 2 4 4H3l4-4Zm0 10 4-4H3l4 4Z",
+                    {
+                        ...sharedOptions,
+                        classes: [
+                            "js-sorting-indicator",
+                            "js-sorting-indicator-none"
+                        ],
+                    }
+                );
+
+                const sortedAsc = makeStacksIcon(
+                    "iconArrowUpSm",
+                    "M3 9h8L7 5 3 9Z",
+                    {
+                        ...sharedOptions,
+                        classes: [
+                            "js-sorting-indicator",
+                            "js-sorting-indicator-asc"
+                        ],
+                        hidden: true
+                    }
+                );
+
+                const sortedDesc = makeStacksIcon(
+                    "iconArrowDownSm",
+                    "M3 5h8L7 9 3 5Z",
+                    {
+                        ...sharedOptions,
+                        classes: [
+                            "js-sorting-indicator",
+                            "js-sorting-indicator-desc"
+                        ],
+                        hidden: true
+                    }
+                );
+
+                th.append(unsorted, sortedAsc, sortedDesc);
+            }
+
             return th;
         }));
 
@@ -714,7 +790,8 @@ window.addEventListener("load", async () => {
             headers: ["Type", "Author", "Score", "Actions"],
             rows: [...posts].map(([id, info]) => {
                 return postInfoToTableRowConfig(id, info);
-            })
+            }),
+            sortable: true
         });
 
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {

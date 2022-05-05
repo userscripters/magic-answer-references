@@ -157,14 +157,18 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                         });
                     });
                 };
-                makeStacksIcon = function (name, pathConfig, namespace) {
-                    if (namespace === void 0) { namespace = "http://www.w3.org/2000/svg"; }
+                makeStacksIcon = function (name, pathConfig, options) {
+                    var _a;
+                    if (options === void 0) { options = {}; }
+                    var _b = options.classes, classes = _b === void 0 ? [] : _b, _c = options.hidden, hidden = _c === void 0 ? false : _c, _d = options.namespace, namespace = _d === void 0 ? "http://www.w3.org/2000/svg" : _d, _e = options.height, height = _e === void 0 ? 18 : _e, _f = options.width, width = _f === void 0 ? 18 : _f;
                     var svg = document.createElementNS(namespace, "svg");
-                    svg.classList.add("svg-icon", name);
-                    svg.setAttribute("width", "18");
-                    svg.setAttribute("height", "18");
-                    svg.setAttribute("viewBox", "0 0 18 18");
+                    (_a = svg.classList).add.apply(_a, __spreadArray(["svg-icon", name], __read(classes), false));
+                    svg.setAttribute("width", width.toString());
+                    svg.setAttribute("height", height.toString());
+                    svg.setAttribute("viewBox", "0 0 ".concat(width, " ").concat(height));
                     svg.setAttribute("aria-hidden", "true");
+                    if (hidden)
+                        svg.classList.add("d-none");
                     var path = document.createElementNS(namespace, "path");
                     path.setAttribute("d", pathConfig);
                     svg.append(path);
@@ -281,18 +285,44 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 };
                 makeStacksTable = function (id, options) {
                     var _a;
-                    var _b = options.classes, classes = _b === void 0 ? [] : _b, headers = options.headers, _c = options.rows, rows = _c === void 0 ? [] : _c;
+                    var _b = options.classes, classes = _b === void 0 ? [] : _b, headers = options.headers, _c = options.rows, rows = _c === void 0 ? [] : _c, _d = options.sortable, sortable = _d === void 0 ? false : _d;
                     var wrapper = document.createElement("div");
                     (_a = wrapper.classList).add.apply(_a, __spreadArray(["s-table-container"], __read(classes), false));
                     var table = document.createElement("table");
                     table.classList.add("s-table");
                     table.id = id;
+                    if (sortable) {
+                        table.classList.add("s-table__sortable");
+                        table.dataset.controller = "s-table";
+                    }
                     var head = document.createElement("thead");
                     var headRow = document.createElement("tr");
                     headRow.append.apply(headRow, __spreadArray([], __read(headers.map(function (hdr) {
                         var th = document.createElement("th");
                         th.scope = "col";
                         th.append(hdr);
+                        if (sortable) {
+                            var dataset = th.dataset;
+                            dataset.action = "click->s-table#sort";
+                            dataset.sTableTarget = "column";
+                            var sharedOptions = {
+                                width: 14,
+                                height: 14
+                            };
+                            var unsorted = makeStacksIcon("iconArrowUpDownSm", "m7 2 4 4H3l4-4Zm0 10 4-4H3l4 4Z", __assign(__assign({}, sharedOptions), { classes: [
+                                    "js-sorting-indicator",
+                                    "js-sorting-indicator-none"
+                                ] }));
+                            var sortedAsc = makeStacksIcon("iconArrowUpSm", "M3 9h8L7 5 3 9Z", __assign(__assign({}, sharedOptions), { classes: [
+                                    "js-sorting-indicator",
+                                    "js-sorting-indicator-asc"
+                                ], hidden: true }));
+                            var sortedDesc = makeStacksIcon("iconArrowDownSm", "M3 5h8L7 9 3 5Z", __assign(__assign({}, sharedOptions), { classes: [
+                                    "js-sorting-indicator",
+                                    "js-sorting-indicator-desc"
+                                ], hidden: true }));
+                            th.append(unsorted, sortedAsc, sortedDesc);
+                        }
                         return th;
                     })), false));
                     var body = document.createElement("tbody");
@@ -551,7 +581,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     rows: __spreadArray([], __read(posts), false).map(function (_a) {
                         var _b = __read(_a, 2), id = _b[0], info = _b[1];
                         return postInfoToTableRowConfig(id, info);
-                    })
+                    }),
+                    sortable: true
                 }), 2), refTableWrapper = _a[0], refTable_1 = _a[1];
                 _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
                     placeholder: "Post link or text to search for",
