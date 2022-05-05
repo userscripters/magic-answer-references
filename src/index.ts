@@ -662,7 +662,7 @@ window.addEventListener("load", async () => {
 
         return {
             cells: [postType, author, votes, actionBtn],
-            data: { body }
+            data: { body, id }
         };
     };
 
@@ -718,6 +718,8 @@ window.addEventListener("load", async () => {
         const key = await store.load(seAPIkeyKey, "");
         await store.save(seAPIkeyKey, key);
 
+        const apiPostCache = new Map<string, StackExchangeAPI.Post>();
+
         searchInput.addEventListener("input", async () => {
             const { value } = searchInput;
 
@@ -725,8 +727,18 @@ window.addEventListener("load", async () => {
                 const id = getQuestionId(value) || getAnswerId(value);
                 if (!id) return;
 
-                const post = await getPost(id, { key, site: getAPIsite(value) });
+                if (apiPostCache.get(id)) {
+                    const postRow = refTable.querySelector<HTMLTableRowElement>(`[data-id=${id}]`);
+                    if (postRow) postRow.hidden = false;
+                    return;
+                }
+
+                const post = await getPost(id, {
+                    key, site: getAPIsite(value)
+                });
                 if (!post) return;
+
+                apiPostCache.set(id, post);
 
                 const { body = "", post_type, score, owner } = post;
 

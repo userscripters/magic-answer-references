@@ -130,7 +130,7 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTableRow, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, actionBtnConfig, postInfoToTableRowConfig, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store, seAPIkeyKey, key_1, refBtn;
+    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTableRow, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, actionBtnConfig, postInfoToTableRowConfig, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store, seAPIkeyKey, key_1, apiPostCache_1, refBtn;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -510,7 +510,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     });
                     return {
                         cells: [postType, author, votes, actionBtn],
-                        data: { body: body }
+                        data: { body: body, id: id }
                     };
                 };
                 editor = document.getElementById("post-editor");
@@ -564,8 +564,9 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 return [4, store.save(seAPIkeyKey, key_1)];
             case 5:
                 _c.sent();
+                apiPostCache_1 = new Map();
                 searchInput_1.addEventListener("input", function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var value, id, post, _a, body, post_type, score, owner, _b, cells, data, rows, rows_1, rows_1_1, row, body;
+                    var value, id, postRow, post, _a, body, post_type, score, owner, _b, cells, data, rows, rows_1, rows_1_1, row, body;
                     var e_1, _c;
                     return __generator(this, function (_d) {
                         switch (_d.label) {
@@ -575,11 +576,21 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                 id = getQuestionId(value) || getAnswerId(value);
                                 if (!id)
                                     return [2];
-                                return [4, getPost(id, { key: key_1, site: getAPIsite(value) })];
+                                if (apiPostCache_1.get(id)) {
+                                    postRow = refTable_1.querySelector("[data-id=".concat(id, "]"));
+                                    if (postRow)
+                                        postRow.hidden = false;
+                                    return [2];
+                                }
+                                return [4, getPost(id, {
+                                        key: key_1,
+                                        site: getAPIsite(value)
+                                    })];
                             case 1:
                                 post = _d.sent();
                                 if (!post)
                                     return [2];
+                                apiPostCache_1.set(id, post);
                                 _a = post.body, body = _a === void 0 ? "" : _a, post_type = post.post_type, score = post.score, owner = post.owner;
                                 _b = postInfoToTableRowConfig(id, {
                                     body: body,
