@@ -166,6 +166,16 @@ window.addEventListener("load", async () => {
         wrap.append(doc);
         return wrap;
     };
+    const makeStacksTableRow = (cells, data) => {
+        const row = document.createElement("tr");
+        Object.assign(row.dataset, data || {});
+        row.append(...cells.map((content) => {
+            const td = document.createElement("td");
+            td.append(content);
+            return td;
+        }));
+        return row;
+    };
     const makeStacksTable = (id, options) => {
         const { headers, rows = [] } = options;
         const wrapper = document.createElement("div");
@@ -183,14 +193,7 @@ window.addEventListener("load", async () => {
         }));
         const body = document.createElement("tbody");
         body.append(...rows.map(({ cells, data }) => {
-            const row = document.createElement("tr");
-            Object.assign(row.dataset, data);
-            row.append(...cells.map((content) => {
-                const td = document.createElement("td");
-                td.append(content);
-                return td;
-            }));
-            return row;
+            return makeStacksTableRow(cells, data);
         }));
         head.append(headRow);
         table.append(head, body);
@@ -365,6 +368,35 @@ window.addEventListener("load", async () => {
         }
         return items[0];
     };
+    const actionBtnConfig = {
+        classes: ["s-btn__xs", "w100"],
+        type: "outlined",
+        muted: true
+    };
+    const postInfoToTableRowConfig = (id, info) => {
+        const { authorName, authorLink, body, container, type, votes } = info;
+        const author = authorLink && authorName ?
+            makeAnchor(authorLink, authorName) :
+            authorName || "";
+        const postType = document.createElement("span");
+        postType.textContent = type;
+        postType.addEventListener("click", () => {
+            if (!container)
+                return;
+            const { scrollX, scrollY } = window;
+            const { top, left } = container.getBoundingClientRect();
+            window.scrollTo(left + scrollX, top + scrollY);
+        });
+        const actionBtn = makeStacksButton(`${scriptName}-ref-${id}`, "ref", actionBtnConfig);
+        actionBtn.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            insertPostReference(postTextInput, info);
+        });
+        return {
+            cells: [postType, author, votes, actionBtn],
+            data: { body }
+        };
+    };
     const editor = document.getElementById("post-editor");
     if (!editor) {
         console.debug(`[${scriptName}] missing post editor`);
@@ -389,34 +421,10 @@ window.addEventListener("load", async () => {
     const configForm = configModal.querySelector("form");
     if (configForm) {
         const posts = scrapePostsOnPage();
-        const actionBtnConfig = {
-            classes: ["s-btn__xs", "w100"],
-            type: "outlined",
-            muted: true
-        };
         const [refTableWrapper, refTable] = makeStacksTable(`${scriptName}-current-posts`, {
             headers: ["Type", "Author", "Votes", "Actions"],
             rows: [...posts].map(([id, info]) => {
-                const { authorName, authorLink, body, container, type, votes } = info;
-                const author = authorLink && authorName ?
-                    makeAnchor(authorLink, authorName) :
-                    authorName || "";
-                const postType = document.createElement("span");
-                postType.textContent = type;
-                postType.addEventListener("click", () => {
-                    const { scrollX, scrollY } = window;
-                    const { top, left } = container.getBoundingClientRect();
-                    window.scrollTo(left + scrollX, top + scrollY);
-                });
-                const actionBtn = makeStacksButton(`${scriptName}-ref-${id}`, "ref", actionBtnConfig);
-                actionBtn.addEventListener("click", (ev) => {
-                    ev.preventDefault();
-                    insertPostReference(postTextInput, info);
-                });
-                return {
-                    cells: [postType, author, votes, actionBtn],
-                    data: { body }
-                };
+                return postInfoToTableRowConfig(id, info);
             })
         });
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {
@@ -438,7 +446,16 @@ window.addEventListener("load", async () => {
                 const post = await getPost(id, { key, site: getAPIsite(value) });
                 if (!post)
                     return;
-                console.debug(post);
+                const { body = "", post_type, score, owner } = post;
+                const { cells, data } = postInfoToTableRowConfig(id, {
+                    body,
+                    id,
+                    authorLink: owner === null || owner === void 0 ? void 0 : owner.link,
+                    authorName: owner === null || owner === void 0 ? void 0 : owner.display_name,
+                    type: post_type,
+                    votes: score.toString()
+                });
+                refTable.tBodies[0].append(makeStacksTableRow(cells, data));
                 return;
             }
             const { rows } = refTable;

@@ -130,7 +130,7 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store, seAPIkeyKey, key_1, refBtn;
+    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTableRow, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, actionBtnConfig, postInfoToTableRowConfig, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store, seAPIkeyKey, key_1, refBtn;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -269,6 +269,16 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     wrap.append(doc);
                     return wrap;
                 };
+                makeStacksTableRow = function (cells, data) {
+                    var row = document.createElement("tr");
+                    Object.assign(row.dataset, data || {});
+                    row.append.apply(row, __spreadArray([], __read(cells.map(function (content) {
+                        var td = document.createElement("td");
+                        td.append(content);
+                        return td;
+                    })), false));
+                    return row;
+                };
                 makeStacksTable = function (id, options) {
                     var headers = options.headers, _a = options.rows, rows = _a === void 0 ? [] : _a;
                     var wrapper = document.createElement("div");
@@ -287,14 +297,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     var body = document.createElement("tbody");
                     body.append.apply(body, __spreadArray([], __read(rows.map(function (_a) {
                         var cells = _a.cells, data = _a.data;
-                        var row = document.createElement("tr");
-                        Object.assign(row.dataset, data);
-                        row.append.apply(row, __spreadArray([], __read(cells.map(function (content) {
-                            var td = document.createElement("td");
-                            td.append(content);
-                            return td;
-                        })), false));
-                        return row;
+                        return makeStacksTableRow(cells, data);
                     })), false));
                     head.append(headRow);
                     table.append(head, body);
@@ -481,6 +484,35 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                         }
                     });
                 }); };
+                actionBtnConfig = {
+                    classes: ["s-btn__xs", "w100"],
+                    type: "outlined",
+                    muted: true
+                };
+                postInfoToTableRowConfig = function (id, info) {
+                    var authorName = info.authorName, authorLink = info.authorLink, body = info.body, container = info.container, type = info.type, votes = info.votes;
+                    var author = authorLink && authorName ?
+                        makeAnchor(authorLink, authorName) :
+                        authorName || "";
+                    var postType = document.createElement("span");
+                    postType.textContent = type;
+                    postType.addEventListener("click", function () {
+                        if (!container)
+                            return;
+                        var scrollX = window.scrollX, scrollY = window.scrollY;
+                        var _a = container.getBoundingClientRect(), top = _a.top, left = _a.left;
+                        window.scrollTo(left + scrollX, top + scrollY);
+                    });
+                    var actionBtn = makeStacksButton("".concat(scriptName, "-ref-").concat(id), "ref", actionBtnConfig);
+                    actionBtn.addEventListener("click", function (ev) {
+                        ev.preventDefault();
+                        insertPostReference(postTextInput, info);
+                    });
+                    return {
+                        cells: [postType, author, votes, actionBtn],
+                        data: { body: body }
+                    };
+                };
                 editor = document.getElementById("post-editor");
                 if (!editor) {
                     console.debug("[".concat(scriptName, "] missing post editor"));
@@ -511,35 +543,11 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 configForm = configModal.querySelector("form");
                 if (!configForm) return [3, 6];
                 posts = scrapePostsOnPage();
-                actionBtnConfig_1 = {
-                    classes: ["s-btn__xs", "w100"],
-                    type: "outlined",
-                    muted: true
-                };
                 _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
                     headers: ["Type", "Author", "Votes", "Actions"],
                     rows: __spreadArray([], __read(posts), false).map(function (_a) {
                         var _b = __read(_a, 2), id = _b[0], info = _b[1];
-                        var authorName = info.authorName, authorLink = info.authorLink, body = info.body, container = info.container, type = info.type, votes = info.votes;
-                        var author = authorLink && authorName ?
-                            makeAnchor(authorLink, authorName) :
-                            authorName || "";
-                        var postType = document.createElement("span");
-                        postType.textContent = type;
-                        postType.addEventListener("click", function () {
-                            var scrollX = window.scrollX, scrollY = window.scrollY;
-                            var _a = container.getBoundingClientRect(), top = _a.top, left = _a.left;
-                            window.scrollTo(left + scrollX, top + scrollY);
-                        });
-                        var actionBtn = makeStacksButton("".concat(scriptName, "-ref-").concat(id), "ref", actionBtnConfig_1);
-                        actionBtn.addEventListener("click", function (ev) {
-                            ev.preventDefault();
-                            insertPostReference(postTextInput, info);
-                        });
-                        return {
-                            cells: [postType, author, votes, actionBtn],
-                            data: { body: body }
-                        };
+                        return postInfoToTableRowConfig(id, info);
                     })
                 }), 2), refTableWrapper = _a[0], refTable_1 = _a[1];
                 _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
@@ -557,10 +565,10 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
             case 5:
                 _c.sent();
                 searchInput_1.addEventListener("input", function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var value, id, post, rows, rows_1, rows_1_1, row, body;
-                    var e_1, _a;
-                    return __generator(this, function (_b) {
-                        switch (_b.label) {
+                    var value, id, post, _a, body, post_type, score, owner, _b, cells, data, rows, rows_1, rows_1_1, row, body;
+                    var e_1, _c;
+                    return __generator(this, function (_d) {
+                        switch (_d.label) {
                             case 0:
                                 value = searchInput_1.value;
                                 if (!isPostLink(value)) return [3, 2];
@@ -569,10 +577,19 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                     return [2];
                                 return [4, getPost(id, { key: key_1, site: getAPIsite(value) })];
                             case 1:
-                                post = _b.sent();
+                                post = _d.sent();
                                 if (!post)
                                     return [2];
-                                console.debug(post);
+                                _a = post.body, body = _a === void 0 ? "" : _a, post_type = post.post_type, score = post.score, owner = post.owner;
+                                _b = postInfoToTableRowConfig(id, {
+                                    body: body,
+                                    id: id,
+                                    authorLink: owner === null || owner === void 0 ? void 0 : owner.link,
+                                    authorName: owner === null || owner === void 0 ? void 0 : owner.display_name,
+                                    type: post_type,
+                                    votes: score.toString()
+                                }), cells = _b.cells, data = _b.data;
+                                refTable_1.tBodies[0].append(makeStacksTableRow(cells, data));
                                 return [2];
                             case 2:
                                 rows = refTable_1.rows;
@@ -592,7 +609,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
                                 finally {
                                     try {
-                                        if (rows_1_1 && !rows_1_1.done && (_a = rows_1.return)) _a.call(rows_1);
+                                        if (rows_1_1 && !rows_1_1.done && (_c = rows_1.return)) _c.call(rows_1);
                                     }
                                     finally { if (e_1) throw e_1.error; }
                                 }

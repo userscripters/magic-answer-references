@@ -27,19 +27,19 @@ type StacksTableOptions = {
     headers: Array<string | Node>;
 };
 
-type PostType = "answer" | "question";
+type PostType = StackExchangeAPI.Post["post_type"];
 
 type PostInfo = {
     authorLink?: string;
     authorName?: string,
     body: string;
-    container: HTMLElement;
+    container?: HTMLElement;
     id: string;
     type: PostType;
     votes: string;
 };
 
-type GetQuestionOptions = {
+type GetPostOptions = {
     key: string;
     site?: string;
 } | { [x: string]: string; };
@@ -603,8 +603,8 @@ window.addEventListener("load", async () => {
      */
     const getPost = async (
         id: string,
-        { site = "stackoverflow", ...rest }: GetQuestionOptions
-    ): Promise<StackExchangeAPI.Question | undefined> => {
+        { site = "stackoverflow", ...rest }: GetPostOptions
+    ): Promise<StackExchangeAPI.Post | undefined> => {
         const url = new URL(`${API_BASE}/${API_VER}/posts/${id}`);
         url.search = new URLSearchParams({ site, ...rest }).toString();
 
@@ -619,6 +619,51 @@ window.addEventListener("load", async () => {
         }
 
         return items[0];
+    };
+
+    /** shared action button config */
+    const actionBtnConfig: StacksButtonOptions = {
+        classes: ["s-btn__xs", "w100"],
+        type: "outlined",
+        muted: true
+    };
+
+    /**
+     * @summary converts {@link PostInfo} to a table row
+     * @param id post id
+     * @param info post info
+     */
+    const postInfoToTableRowConfig = (id: string, info: PostInfo) => {
+        const { authorName, authorLink, body, container, type, votes } = info;
+
+        const author = authorLink && authorName ?
+            makeAnchor(authorLink, authorName) :
+            authorName || "";
+
+        const postType = document.createElement("span");
+        postType.textContent = type;
+        postType.addEventListener("click", () => {
+            if (!container) return;
+            const { scrollX, scrollY } = window;
+            const { top, left } = container.getBoundingClientRect();
+            window.scrollTo(left + scrollX, top + scrollY);
+        });
+
+        const actionBtn = makeStacksButton(
+            `${scriptName}-ref-${id}`,
+            "ref",
+            actionBtnConfig
+        );
+
+        actionBtn.addEventListener("click", (ev) => {
+            ev.preventDefault(); // otherwise, clicking will scroll
+            insertPostReference(postTextInput, info);
+        });
+
+        return {
+            cells: [postType, author, votes, actionBtn],
+            data: { body }
+        };
     };
 
     const editor = document.getElementById("post-editor");
@@ -654,44 +699,10 @@ window.addEventListener("load", async () => {
     if (configForm) {
         const posts = scrapePostsOnPage();
 
-        const actionBtnConfig: StacksButtonOptions = {
-            classes: ["s-btn__xs", "w100"],
-            type: "outlined",
-            muted: true
-        };
-
         const [refTableWrapper, refTable] = makeStacksTable(`${scriptName}-current-posts`, {
             headers: ["Type", "Author", "Votes", "Actions"],
             rows: [...posts].map(([id, info]) => {
-                const { authorName, authorLink, body, container, type, votes } = info;
-
-                const author = authorLink && authorName ?
-                    makeAnchor(authorLink, authorName) :
-                    authorName || "";
-
-                const postType = document.createElement("span");
-                postType.textContent = type;
-                postType.addEventListener("click", () => {
-                    const { scrollX, scrollY } = window;
-                    const { top, left } = container.getBoundingClientRect();
-                    window.scrollTo(left + scrollX, top + scrollY);
-                });
-
-                const actionBtn = makeStacksButton(
-                    `${scriptName}-ref-${id}`,
-                    "ref",
-                    actionBtnConfig
-                );
-
-                actionBtn.addEventListener("click", (ev) => {
-                    ev.preventDefault(); // otherwise, clicking will scroll
-                    insertPostReference(postTextInput, info);
-                });
-
-                return {
-                    cells: [postType, author, votes, actionBtn],
-                    data: { body }
-                };
+                return postInfoToTableRowConfig(id, info);
             })
         });
 
@@ -717,8 +728,18 @@ window.addEventListener("load", async () => {
                 const post = await getPost(id, { key, site: getAPIsite(value) });
                 if (!post) return;
 
-                // TODO: append to table
-                console.debug(post);
+                const { body = "", post_type, score, owner } = post;
+
+                const { cells, data } = postInfoToTableRowConfig(id, {
+                    body,
+                    id,
+                    authorLink: owner?.link,
+                    authorName: owner?.display_name,
+                    type: post_type,
+                    votes: score.toString()
+                });
+
+                refTable.tBodies[0].append(makeStacksTableRow(cells, data));
                 return;
             }
 
