@@ -241,6 +241,26 @@ window.addEventListener("load", async () => {
         ];
         rules.forEach((rule) => sheet.insertRule(rule));
     };
+    const makeStacksButton = (id, text, { classes = [], title, danger = false, loading = false, muted = false, primary = false, type = "filled", } = {}) => {
+        const btn = document.createElement("button");
+        btn.id = id;
+        btn.textContent = text;
+        btn.classList.add("s-btn", `s-btn__${type}`, ...classes);
+        btn.setAttribute("role", "button");
+        btn.setAttribute("aria-label", title || text);
+        if (danger)
+            btn.classList.add("s-btn__danger");
+        if (muted)
+            btn.classList.add("s-btn__muted");
+        if (primary)
+            btn.classList.add("s-btn__primary");
+        if (loading)
+            btn.classList.add("is-loading");
+        if (title) {
+            btn.title = title;
+        }
+        return btn;
+    };
     const makeEditorButton = (id, iconName, path, title, action) => {
         const wrapper = document.createElement("li");
         wrapper.classList.add("wmd-button", scriptName);
@@ -288,6 +308,20 @@ window.addEventListener("load", async () => {
         });
         return posts;
     };
+    const insertPostReference = (input, info) => {
+        const { selectionStart, selectionEnd, value } = input;
+        const isCollapsed = selectionStart === selectionEnd;
+        const { authorLink, authorName, id, type } = info;
+        const before = value.slice(0, selectionStart + 1);
+        const after = value.slice(selectionEnd - 1);
+        const short = type === "answer" ? "a" : "q";
+        const postLink = `https://${location.origin}/${short}/${id}`;
+        const authorRef = authorLink ? `[${authorName}](${authorLink})` : authorName;
+        const postRef = `${authorRef ? `${authorRef}'s ` : ""}[${type}](${postLink})`;
+        input.value = isCollapsed ? value + postRef : before + postRef + after;
+        input.dispatchEvent(new Event("input"));
+        document.dispatchEvent(new CustomEvent(`${scriptName}-close-config`));
+    };
     const editor = document.getElementById("post-editor");
     if (!editor) {
         console.debug(`[${scriptName}] missing post editor`);
@@ -303,13 +337,23 @@ window.addEventListener("load", async () => {
         console.debug(`[${scriptName}] missing editor snippet button`);
         return;
     }
+    const postTextInput = await waitForSelector("#wmd-input");
+    if (!postTextInput) {
+        console.debug(`[${scriptName}] missing editor input`);
+        return;
+    }
     const configModal = makeStacksModal(`${scriptName}-config`, "Reference a Post");
     const configForm = configModal.querySelector("form");
     if (configForm) {
         const posts = scrapePostsOnPage();
+        const actionBtnConfig = {
+            classes: ["s-btn__xs", "w100"],
+            type: "outlined",
+            muted: true
+        };
         const refTable = makeStacksTable(`${scriptName}-current-posts`, {
-            headers: ["Type", "Author", "Votes"],
-            cellGrid: [...posts].map(([_id, info]) => {
+            headers: ["Type", "Author", "Votes", "Actions"],
+            cellGrid: [...posts].map(([id, info]) => {
                 const { authorName, authorLink, container, type, votes } = info;
                 const author = authorLink && authorName ?
                     makeAnchor(authorLink, authorName) :
@@ -321,7 +365,9 @@ window.addEventListener("load", async () => {
                     const { top, left } = container.getBoundingClientRect();
                     window.scrollTo(left + scrollX, top + scrollY);
                 });
-                return [postType, author, votes];
+                const actionBtn = makeStacksButton(`${scriptName}-ref-${id}`, "ref", actionBtnConfig);
+                actionBtn.addEventListener("click", () => insertPostReference(postTextInput, info));
+                return [postType, author, votes, actionBtn];
             })
         });
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {
@@ -337,5 +383,6 @@ window.addEventListener("load", async () => {
     });
     refBtn.addEventListener("click", () => Stacks.showModal(configModal));
     snippetBtn.after(refBtn);
+    document.addEventListener(`${scriptName}-close-config`, () => Stacks.hideModal(configModal));
     appendStyles();
 }, { once: true });

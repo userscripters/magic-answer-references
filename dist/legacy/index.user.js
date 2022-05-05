@@ -94,7 +94,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeEditorButton, scrapePost, scrapePostsOnPage, editor, menu, snippetBtn, configModal, configForm, posts, refTable, _a, searchWrapper, searchInput, refBtn;
+    var scriptName, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, refTable, _a, searchWrapper, searchInput, refBtn;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -308,6 +308,28 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     ];
                     rules.forEach(function (rule) { return sheet.insertRule(rule); });
                 };
+                makeStacksButton = function (id, text, _a) {
+                    var _b;
+                    var _c = _a === void 0 ? {} : _a, _d = _c.classes, classes = _d === void 0 ? [] : _d, title = _c.title, _e = _c.danger, danger = _e === void 0 ? false : _e, _f = _c.loading, loading = _f === void 0 ? false : _f, _g = _c.muted, muted = _g === void 0 ? false : _g, _h = _c.primary, primary = _h === void 0 ? false : _h, _j = _c.type, type = _j === void 0 ? "filled" : _j;
+                    var btn = document.createElement("button");
+                    btn.id = id;
+                    btn.textContent = text;
+                    (_b = btn.classList).add.apply(_b, __spreadArray(["s-btn", "s-btn__".concat(type)], __read(classes), false));
+                    btn.setAttribute("role", "button");
+                    btn.setAttribute("aria-label", title || text);
+                    if (danger)
+                        btn.classList.add("s-btn__danger");
+                    if (muted)
+                        btn.classList.add("s-btn__muted");
+                    if (primary)
+                        btn.classList.add("s-btn__primary");
+                    if (loading)
+                        btn.classList.add("is-loading");
+                    if (title) {
+                        btn.title = title;
+                    }
+                    return btn;
+                };
                 makeEditorButton = function (id, iconName, path, title, action) {
                     var wrapper = document.createElement("li");
                     wrapper.classList.add("wmd-button", scriptName);
@@ -355,6 +377,20 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     });
                     return posts;
                 };
+                insertPostReference = function (input, info) {
+                    var selectionStart = input.selectionStart, selectionEnd = input.selectionEnd, value = input.value;
+                    var isCollapsed = selectionStart === selectionEnd;
+                    var authorLink = info.authorLink, authorName = info.authorName, id = info.id, type = info.type;
+                    var before = value.slice(0, selectionStart + 1);
+                    var after = value.slice(selectionEnd - 1);
+                    var short = type === "answer" ? "a" : "q";
+                    var postLink = "https://".concat(location.origin, "/").concat(short, "/").concat(id);
+                    var authorRef = authorLink ? "[".concat(authorName, "](").concat(authorLink, ")") : authorName;
+                    var postRef = "".concat(authorRef ? "".concat(authorRef, "'s ") : "", "[").concat(type, "](").concat(postLink, ")");
+                    input.value = isCollapsed ? value + postRef : before + postRef + after;
+                    input.dispatchEvent(new Event("input"));
+                    document.dispatchEvent(new CustomEvent("".concat(scriptName, "-close-config")));
+                };
                 editor = document.getElementById("post-editor");
                 if (!editor) {
                     console.debug("[".concat(scriptName, "] missing post editor"));
@@ -374,14 +410,26 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     console.debug("[".concat(scriptName, "] missing editor snippet button"));
                     return [2];
                 }
+                return [4, waitForSelector("#wmd-input")];
+            case 3:
+                postTextInput = _b.sent();
+                if (!postTextInput) {
+                    console.debug("[".concat(scriptName, "] missing editor input"));
+                    return [2];
+                }
                 configModal = makeStacksModal("".concat(scriptName, "-config"), "Reference a Post");
                 configForm = configModal.querySelector("form");
                 if (configForm) {
                     posts = scrapePostsOnPage();
+                    actionBtnConfig_1 = {
+                        classes: ["s-btn__xs", "w100"],
+                        type: "outlined",
+                        muted: true
+                    };
                     refTable = makeStacksTable("".concat(scriptName, "-current-posts"), {
-                        headers: ["Type", "Author", "Votes"],
+                        headers: ["Type", "Author", "Votes", "Actions"],
                         cellGrid: __spreadArray([], __read(posts), false).map(function (_a) {
-                            var _b = __read(_a, 2), _id = _b[0], info = _b[1];
+                            var _b = __read(_a, 2), id = _b[0], info = _b[1];
                             var authorName = info.authorName, authorLink = info.authorLink, container = info.container, type = info.type, votes = info.votes;
                             var author = authorLink && authorName ?
                                 makeAnchor(authorLink, authorName) :
@@ -393,7 +441,9 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                 var _a = container.getBoundingClientRect(), top = _a.top, left = _a.left;
                                 window.scrollTo(left + scrollX, top + scrollY);
                             });
-                            return [postType, author, votes];
+                            var actionBtn = makeStacksButton("".concat(scriptName, "-ref-").concat(id), "ref", actionBtnConfig_1);
+                            actionBtn.addEventListener("click", function () { return insertPostReference(postTextInput, info); });
+                            return [postType, author, votes, actionBtn];
                         })
                     });
                     _a = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
@@ -409,6 +459,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 });
                 refBtn.addEventListener("click", function () { return Stacks.showModal(configModal); });
                 snippetBtn.after(refBtn);
+                document.addEventListener("".concat(scriptName, "-close-config"), function () { return Stacks.hideModal(configModal); });
                 appendStyles();
                 return [2];
         }
