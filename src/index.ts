@@ -370,6 +370,9 @@ window.addEventListener("load", async () => {
             `.${scriptName}.wmd-button > .svg-icon:hover {
                 color: var(--black-900);
             }`,
+            `.s-table td {
+                border-bottom: 1px solid var(--bc-medium);
+            }`
         ];
 
         rules.forEach((rule) => sheet.insertRule(rule));
