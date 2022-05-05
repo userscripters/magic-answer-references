@@ -6,7 +6,7 @@
 | Name | @userscripters/magic-answer-references |
 | Description | Make referencing other answers easier |
 | License | [GPL-3.0-or-later](https://spdx.org/licenses/GPL-3.0-or-later) |
-| Version | 2.0.0 |
+| Version | 2.1.0 |
 
 
 # Support
