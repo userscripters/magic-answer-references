@@ -1,9 +1,13 @@
+/// <reference types="@userscripters/stackexchange-api-types" />
+
 type StacksTextInputOptions = {
     classes?: string[];
     placeholder?: string;
     title?: string;
     value?: string;
 };
+
+declare const Store: typeof import("@userscripters/storage");
 
 type StacksButtonOptions = {
     classes?: string[];
@@ -35,8 +39,16 @@ type PostInfo = {
     votes: string;
 };
 
+type GetQuestionOptions = {
+    key: string;
+    site?: string;
+} | { [x: string]: string; };
+
 window.addEventListener("load", async () => {
     const scriptName = "magic-answer-references";
+
+    const API_BASE = "https://api.stackexchange.com";
+    const API_VER = 2.3;
 
     /**
      * @summary waits for an {@link Element} to appear in DOM
@@ -529,6 +541,18 @@ window.addEventListener("load", async () => {
         document.dispatchEvent(new CustomEvent(`${scriptName}-close-config`));
     };
 
+    // https://regex101.com/r/c1tnuL/1
+    const getQuestionId = (text: string) => {
+        const [, id] = /^https:.+?\/q(?:uestions)?\/(\d+)(?:\/?\d*?$)/.exec(text) || [];
+        return id;
+    };
+
+    // https://regex101.com/r/FkAqes/1
+    const getAnswerId = (text: string) => {
+        const [, g1, g2] = /^https:.+?\/(?:a\/(\d+)(?:\/?\d*?$)|questions\/.+?\/(\d+))/.exec(text) || [];
+        return g1 || g2;
+    };
+
     // https://regex101.com/r/Zknsuv/3
     const postLinkExpr = new RegExp(
         "^https:.+?\\/(?:q(?:uestions)?|a)\\/\\d+(?:\\/|$)"
@@ -539,6 +563,51 @@ window.addEventListener("load", async () => {
      * @param text string to check
      */
     const isPostLink = (text: string) => postLinkExpr.test(text);
+
+    /**
+     * @summary gets an API 'site' slug from a given string
+     * @param text string to get the slug from
+     */
+    const getAPIsite = (text: string) => {
+        const [, hostname] = /^https:.+?\/([^\/]+)\//.exec(text) || [];
+        const normalized = hostname.split(".").slice(0, -1).join(".");
+        return normalized !== "meta.stackexchange" ?
+            normalized.replace(".stackexchange", "") :
+            normalized;
+    };
+
+    /**
+     * @summary delays script execution
+     * @param ms milliseconds to delay for
+     */
+    const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    /**
+     * @see https://api.stackexchange.com/docs/posts-by-ids
+     *
+     * @summary gets post info
+     * @param id post id
+     * @param options request configuration
+     */
+    const getPost = async (
+        id: string,
+        { site = "stackoverflow", ...rest }: GetQuestionOptions
+    ): Promise<StackExchangeAPI.Question | undefined> => {
+        const url = new URL(`${API_BASE}/${API_VER}/posts/${id}`);
+        url.search = new URLSearchParams({ site, ...rest }).toString();
+
+        const res = await fetch(url.toString());
+        if (!res.ok) return;
+
+        const { items = [], backoff } = await res.json();
+
+        if (backoff) {
+            await delay(backoff * 1e3);
+            return getPost(id, { site, ...rest });
+        }
+
+        return items[0];
+    };
 
     const editor = document.getElementById("post-editor");
     if (!editor) {
@@ -620,13 +689,24 @@ window.addEventListener("load", async () => {
             classes: ["m0", "mt12"]
         });
 
-        const isPostLink = (_text: string) => false;
+        const storage = Store.locateStorage();
+        const store = new Store.default(scriptName, storage);
+        const seAPIkeyKey = "se-api-key";
+        const key = await store.load(seAPIkeyKey, "");
+        await store.save(seAPIkeyKey, key);
 
-        searchInput.addEventListener("input", () => {
+        searchInput.addEventListener("input", async () => {
             const { value } = searchInput;
 
             if (isPostLink(value)) {
-                // TODO: fetch post and append to table
+                const id = getQuestionId(value) || getAnswerId(value);
+                if (!id) return;
+
+                const post = await getPost(id, { key, site: getAPIsite(value) });
+                if (!post) return;
+
+                // TODO: append to table
+                console.debug(post);
                 return;
             }
 

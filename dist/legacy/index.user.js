@@ -1,7 +1,9 @@
 // ==UserScript==
 // @author          Oleg Valter <oleg.a.valter@gmail.com>
 // @description     Make referencing other answers easier
-// @grant           none
+// @grant           GM_deleteValue
+// @grant           GM_getValue
+// @grant           GM_setValue
 // @homepage        https://github.com/userscripters/magic-answer-references#readme
 // @match           https://*.stackexchange.com/questions/*
 // @match           https://askubuntu.com/questions/*
@@ -25,6 +27,7 @@
 // @match           https://superuser.com/questions/*
 // @name            Magic Answer References
 // @namespace       userscripters
+// @require         https://github.com/userscripters/storage/raw/master/dist/browser.js
 // @run-at          document-start
 // @source          git+https://github.com/userscripters/magic-answer-references.git
 // @supportURL      https://github.com/userscripters/magic-answer-references/issues
@@ -32,6 +35,17 @@
 // ==/UserScript==
 
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -67,6 +81,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
+};
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -105,11 +130,13 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, postLinkExpr, isPostLink, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, refBtn;
+    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store, seAPIkeyKey, key_1, refBtn;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 scriptName = "magic-answer-references";
+                API_BASE = "https://api.stackexchange.com";
+                API_VER = 2.3;
                 waitForSelector = function (selector, context) {
                     if (context === void 0) { context = document; }
                     return new Promise(function (resolve) {
@@ -408,8 +435,52 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     input.dispatchEvent(new Event("input"));
                     document.dispatchEvent(new CustomEvent("".concat(scriptName, "-close-config")));
                 };
+                getQuestionId = function (text) {
+                    var _a = __read(/^https:.+?\/q(?:uestions)?\/(\d+)(?:\/?\d*?$)/.exec(text) || [], 2), id = _a[1];
+                    return id;
+                };
+                getAnswerId = function (text) {
+                    var _a = __read(/^https:.+?\/(?:a\/(\d+)(?:\/?\d*?$)|questions\/.+?\/(\d+))/.exec(text) || [], 3), g1 = _a[1], g2 = _a[2];
+                    return g1 || g2;
+                };
                 postLinkExpr = new RegExp("^https:.+?\\/(?:q(?:uestions)?|a)\\/\\d+(?:\\/|$)");
                 isPostLink = function (text) { return postLinkExpr.test(text); };
+                getAPIsite = function (text) {
+                    var _a = __read(/^https:.+?\/([^\/]+)\//.exec(text) || [], 2), hostname = _a[1];
+                    var normalized = hostname.split(".").slice(0, -1).join(".");
+                    return normalized !== "meta.stackexchange" ?
+                        normalized.replace(".stackexchange", "") :
+                        normalized;
+                };
+                delay = function (ms) {
+                    if (ms === void 0) { ms = 100; }
+                    return new Promise(function (resolve) { return setTimeout(resolve, ms); });
+                };
+                getPost = function (id, _a) { return __awaiter(void 0, void 0, void 0, function () {
+                    var url, res, _b, _c, items, backoff;
+                    var _d = _a.site, site = _d === void 0 ? "stackoverflow" : _d, rest = __rest(_a, ["site"]);
+                    return __generator(this, function (_e) {
+                        switch (_e.label) {
+                            case 0:
+                                url = new URL("".concat(API_BASE, "/").concat(API_VER, "/posts/").concat(id));
+                                url.search = new URLSearchParams(__assign({ site: site }, rest)).toString();
+                                return [4, fetch(url.toString())];
+                            case 1:
+                                res = _e.sent();
+                                if (!res.ok)
+                                    return [2];
+                                return [4, res.json()];
+                            case 2:
+                                _b = _e.sent(), _c = _b.items, items = _c === void 0 ? [] : _c, backoff = _b.backoff;
+                                if (!backoff) return [3, 4];
+                                return [4, delay(backoff * 1e3)];
+                            case 3:
+                                _e.sent();
+                                return [2, getPost(id, __assign({ site: site }, rest))];
+                            case 4: return [2, items[0]];
+                        }
+                    });
+                }); };
                 editor = document.getElementById("post-editor");
                 if (!editor) {
                     console.debug("[".concat(scriptName, "] missing post editor"));
@@ -438,75 +509,100 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 }
                 configModal = makeStacksModal("".concat(scriptName, "-config"), "Reference a Post", { minWidth: 25 });
                 configForm = configModal.querySelector("form");
-                if (configForm) {
-                    posts = scrapePostsOnPage();
-                    actionBtnConfig_1 = {
-                        classes: ["s-btn__xs", "w100"],
-                        type: "outlined",
-                        muted: true
-                    };
-                    _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
-                        headers: ["Type", "Author", "Votes", "Actions"],
-                        rows: __spreadArray([], __read(posts), false).map(function (_a) {
-                            var _b = __read(_a, 2), id = _b[0], info = _b[1];
-                            var authorName = info.authorName, authorLink = info.authorLink, body = info.body, container = info.container, type = info.type, votes = info.votes;
-                            var author = authorLink && authorName ?
-                                makeAnchor(authorLink, authorName) :
-                                authorName || "";
-                            var postType = document.createElement("span");
-                            postType.textContent = type;
-                            postType.addEventListener("click", function () {
-                                var scrollX = window.scrollX, scrollY = window.scrollY;
-                                var _a = container.getBoundingClientRect(), top = _a.top, left = _a.left;
-                                window.scrollTo(left + scrollX, top + scrollY);
-                            });
-                            var actionBtn = makeStacksButton("".concat(scriptName, "-ref-").concat(id), "ref", actionBtnConfig_1);
-                            actionBtn.addEventListener("click", function (ev) {
-                                ev.preventDefault();
-                                insertPostReference(postTextInput, info);
-                            });
-                            return {
-                                cells: [postType, author, votes, actionBtn],
-                                data: { body: body }
-                            };
-                        })
-                    }), 2), refTableWrapper = _a[0], refTable_1 = _a[1];
-                    _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
-                        placeholder: "Post link or text to search for",
-                        title: "Post Search",
-                        classes: ["m0", "mt12"]
-                    }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
-                    searchInput_1.addEventListener("input", function () {
-                        var e_1, _a;
-                        var value = searchInput_1.value;
-                        if (isPostLink(value)) {
-                            console.debug("LINK!", value);
-                            return;
-                        }
-                        var rows = refTable_1.rows;
-                        try {
-                            for (var rows_1 = __values(rows), rows_1_1 = rows_1.next(); !rows_1_1.done; rows_1_1 = rows_1.next()) {
-                                var row = rows_1_1.value;
-                                if (row === rows[0])
-                                    continue;
-                                if (!value) {
-                                    row.hidden = false;
-                                    continue;
+                if (!configForm) return [3, 6];
+                posts = scrapePostsOnPage();
+                actionBtnConfig_1 = {
+                    classes: ["s-btn__xs", "w100"],
+                    type: "outlined",
+                    muted: true
+                };
+                _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
+                    headers: ["Type", "Author", "Votes", "Actions"],
+                    rows: __spreadArray([], __read(posts), false).map(function (_a) {
+                        var _b = __read(_a, 2), id = _b[0], info = _b[1];
+                        var authorName = info.authorName, authorLink = info.authorLink, body = info.body, container = info.container, type = info.type, votes = info.votes;
+                        var author = authorLink && authorName ?
+                            makeAnchor(authorLink, authorName) :
+                            authorName || "";
+                        var postType = document.createElement("span");
+                        postType.textContent = type;
+                        postType.addEventListener("click", function () {
+                            var scrollX = window.scrollX, scrollY = window.scrollY;
+                            var _a = container.getBoundingClientRect(), top = _a.top, left = _a.left;
+                            window.scrollTo(left + scrollX, top + scrollY);
+                        });
+                        var actionBtn = makeStacksButton("".concat(scriptName, "-ref-").concat(id), "ref", actionBtnConfig_1);
+                        actionBtn.addEventListener("click", function (ev) {
+                            ev.preventDefault();
+                            insertPostReference(postTextInput, info);
+                        });
+                        return {
+                            cells: [postType, author, votes, actionBtn],
+                            data: { body: body }
+                        };
+                    })
+                }), 2), refTableWrapper = _a[0], refTable_1 = _a[1];
+                _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
+                    placeholder: "Post link or text to search for",
+                    title: "Post Search",
+                    classes: ["m0", "mt12"]
+                }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
+                storage = Store.locateStorage();
+                store = new Store.default(scriptName, storage);
+                seAPIkeyKey = "se-api-key";
+                return [4, store.load(seAPIkeyKey, "")];
+            case 4:
+                key_1 = _c.sent();
+                return [4, store.save(seAPIkeyKey, key_1)];
+            case 5:
+                _c.sent();
+                searchInput_1.addEventListener("input", function () { return __awaiter(void 0, void 0, void 0, function () {
+                    var value, id, post, rows, rows_1, rows_1_1, row, body;
+                    var e_1, _a;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
+                            case 0:
+                                value = searchInput_1.value;
+                                if (!isPostLink(value)) return [3, 2];
+                                id = getQuestionId(value) || getAnswerId(value);
+                                if (!id)
+                                    return [2];
+                                return [4, getPost(id, { key: key_1, site: getAPIsite(value) })];
+                            case 1:
+                                post = _b.sent();
+                                if (!post)
+                                    return [2];
+                                console.debug(post);
+                                return [2];
+                            case 2:
+                                rows = refTable_1.rows;
+                                try {
+                                    for (rows_1 = __values(rows), rows_1_1 = rows_1.next(); !rows_1_1.done; rows_1_1 = rows_1.next()) {
+                                        row = rows_1_1.value;
+                                        if (row === rows[0])
+                                            continue;
+                                        if (!value) {
+                                            row.hidden = false;
+                                            continue;
+                                        }
+                                        body = row.dataset.body;
+                                        row.hidden = !(body === null || body === void 0 ? void 0 : body.includes(value));
+                                    }
                                 }
-                                var body = row.dataset.body;
-                                row.hidden = !(body === null || body === void 0 ? void 0 : body.includes(value));
-                            }
-                        }
-                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                        finally {
-                            try {
-                                if (rows_1_1 && !rows_1_1.done && (_a = rows_1.return)) _a.call(rows_1);
-                            }
-                            finally { if (e_1) throw e_1.error; }
+                                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                                finally {
+                                    try {
+                                        if (rows_1_1 && !rows_1_1.done && (_a = rows_1.return)) _a.call(rows_1);
+                                    }
+                                    finally { if (e_1) throw e_1.error; }
+                                }
+                                return [2];
                         }
                     });
-                    configForm.append(refTableWrapper, searchWrapper);
-                }
+                }); });
+                configForm.append(refTableWrapper, searchWrapper);
+                _c.label = 6;
+            case 6:
                 document.body.append(configModal);
                 refBtn = makeEditorButton("".concat(scriptName, "-reference"), "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", function () { return Stacks.showModal(configModal); });
                 snippetBtn.after(refBtn);

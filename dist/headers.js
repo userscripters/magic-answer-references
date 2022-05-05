@@ -1,7 +1,9 @@
 // ==UserScript==
 // @author          Oleg Valter <oleg.a.valter@gmail.com>
 // @description     Make referencing other answers easier
-// @grant           none
+// @grant           GM_deleteValue
+// @grant           GM_getValue
+// @grant           GM_setValue
 // @homepage        https://github.com/userscripters/magic-answer-references#readme
 // @match           https://*.stackexchange.com/questions/*
 // @match           https://askubuntu.com/questions/*
@@ -25,6 +27,7 @@
 // @match           https://superuser.com/questions/*
 // @name            Magic Answer References
 // @namespace       userscripters
+// @require         https://github.com/userscripters/storage/raw/master/dist/browser.js
 // @run-at          document-start
 // @source          git+https://github.com/userscripters/magic-answer-references.git
 // @supportURL      https://github.com/userscripters/magic-answer-references/issues

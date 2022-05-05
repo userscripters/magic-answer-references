@@ -1,7 +1,9 @@
 // ==UserScript==
 // @author          Oleg Valter <oleg.a.valter@gmail.com>
 // @description     Make referencing other answers easier
-// @grant           none
+// @grant           GM_deleteValue
+// @grant           GM_getValue
+// @grant           GM_setValue
 // @homepage        https://github.com/userscripters/magic-answer-references#readme
 // @match           https://*.stackexchange.com/questions/*
 // @match           https://askubuntu.com/questions/*
@@ -25,6 +27,7 @@
 // @match           https://superuser.com/questions/*
 // @name            Magic Answer References
 // @namespace       userscripters
+// @require         https://github.com/userscripters/storage/raw/master/dist/browser.js
 // @run-at          document-start
 // @source          git+https://github.com/userscripters/magic-answer-references.git
 // @supportURL      https://github.com/userscripters/magic-answer-references/issues
@@ -34,6 +37,8 @@
 "use strict";
 window.addEventListener("load", async () => {
     const scriptName = "magic-answer-references";
+    const API_BASE = "https://api.stackexchange.com";
+    const API_VER = 2.3;
     const waitForSelector = (selector, context = document) => {
         return new Promise((resolve) => {
             const foundAtInitTime = context.querySelector(selector);
@@ -329,8 +334,37 @@ window.addEventListener("load", async () => {
         input.dispatchEvent(new Event("input"));
         document.dispatchEvent(new CustomEvent(`${scriptName}-close-config`));
     };
+    const getQuestionId = (text) => {
+        const [, id] = /^https:.+?\/q(?:uestions)?\/(\d+)(?:\/?\d*?$)/.exec(text) || [];
+        return id;
+    };
+    const getAnswerId = (text) => {
+        const [, g1, g2] = /^https:.+?\/(?:a\/(\d+)(?:\/?\d*?$)|questions\/.+?\/(\d+))/.exec(text) || [];
+        return g1 || g2;
+    };
     const postLinkExpr = new RegExp("^https:.+?\\/(?:q(?:uestions)?|a)\\/\\d+(?:\\/|$)");
     const isPostLink = (text) => postLinkExpr.test(text);
+    const getAPIsite = (text) => {
+        const [, hostname] = /^https:.+?\/([^\/]+)\//.exec(text) || [];
+        const normalized = hostname.split(".").slice(0, -1).join(".");
+        return normalized !== "meta.stackexchange" ?
+            normalized.replace(".stackexchange", "") :
+            normalized;
+    };
+    const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
+    const getPost = async (id, { site = "stackoverflow", ...rest }) => {
+        const url = new URL(`${API_BASE}/${API_VER}/posts/${id}`);
+        url.search = new URLSearchParams({ site, ...rest }).toString();
+        const res = await fetch(url.toString());
+        if (!res.ok)
+            return;
+        const { items = [], backoff } = await res.json();
+        if (backoff) {
+            await delay(backoff * 1e3);
+            return getPost(id, { site, ...rest });
+        }
+        return items[0];
+    };
     const editor = document.getElementById("post-editor");
     if (!editor) {
         console.debug(`[${scriptName}] missing post editor`);
@@ -390,10 +424,21 @@ window.addEventListener("load", async () => {
             title: "Post Search",
             classes: ["m0", "mt12"]
         });
-        searchInput.addEventListener("input", () => {
+        const storage = Store.locateStorage();
+        const store = new Store.default(scriptName, storage);
+        const seAPIkeyKey = "se-api-key";
+        const key = await store.load(seAPIkeyKey, "");
+        await store.save(seAPIkeyKey, key);
+        searchInput.addEventListener("input", async () => {
             const { value } = searchInput;
             if (isPostLink(value)) {
-                console.debug("LINK!", value);
+                const id = getQuestionId(value) || getAnswerId(value);
+                if (!id)
+                    return;
+                const post = await getPost(id, { key, site: getAPIsite(value) });
+                if (!post)
+                    return;
+                console.debug(post);
                 return;
             }
             const { rows } = refTable;
