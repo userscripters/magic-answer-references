@@ -124,7 +124,8 @@ window.addEventListener("load", async () => {
             return handleCoordChange(e);
         });
     };
-    const makeStacksModal = (id, header) => {
+    const makeStacksModal = (id, header, options) => {
+        const { minWidth } = options;
         const ariaLabelId = "modal-title";
         const ariaDescrId = "modal-description";
         const wrap = document.createElement("aside");
@@ -139,7 +140,7 @@ window.addEventListener("load", async () => {
         dataset.sModalTarget = "modal";
         dataset.controller = "s-modal";
         const doc = document.createElement("div");
-        doc.classList.add("s-modal--dialog", "ps-relative", "hmx6", "wmn50");
+        doc.classList.add("s-modal--dialog", "ps-relative", "hmx6", `wmn${minWidth}`);
         doc.setAttribute("role", "document");
         doc.id = `${id}-document`;
         doc.draggable = true;
@@ -148,7 +149,7 @@ window.addEventListener("load", async () => {
         title.id = ariaLabelId;
         title.textContent = header;
         const form = document.createElement("form");
-        form.classList.add("s-modal--body", "d-flex", "flex__allcells6", "fw-wrap", "gs16");
+        form.classList.add("s-modal--body", "d-flex", "fd-column", "flex__allcells6", "fw-wrap", "gs16");
         const close = document.createElement("button");
         close.classList.add("s-modal--close", "s-btn", "s-btn__muted");
         close.type = "button";
@@ -342,7 +343,7 @@ window.addEventListener("load", async () => {
         console.debug(`[${scriptName}] missing editor input`);
         return;
     }
-    const configModal = makeStacksModal(`${scriptName}-config`, "Reference a Post");
+    const configModal = makeStacksModal(`${scriptName}-config`, "Reference a Post", { minWidth: 25 });
     const configForm = configModal.querySelector("form");
     if (configForm) {
         const posts = scrapePostsOnPage();
@@ -375,7 +376,8 @@ window.addEventListener("load", async () => {
         });
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {
             placeholder: "Post link or text to search for",
-            title: "Post Search"
+            title: "Post Search",
+            classes: ["m0", "mt12"]
         });
         searchInput.addEventListener("change", () => {
         });

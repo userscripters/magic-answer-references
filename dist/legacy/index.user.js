@@ -194,7 +194,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                         return handleCoordChange(e);
                     });
                 };
-                makeStacksModal = function (id, header) {
+                makeStacksModal = function (id, header, options) {
+                    var minWidth = options.minWidth;
                     var ariaLabelId = "modal-title";
                     var ariaDescrId = "modal-description";
                     var wrap = document.createElement("aside");
@@ -209,7 +210,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     dataset.sModalTarget = "modal";
                     dataset.controller = "s-modal";
                     var doc = document.createElement("div");
-                    doc.classList.add("s-modal--dialog", "ps-relative", "hmx6", "wmn50");
+                    doc.classList.add("s-modal--dialog", "ps-relative", "hmx6", "wmn".concat(minWidth));
                     doc.setAttribute("role", "document");
                     doc.id = "".concat(id, "-document");
                     doc.draggable = true;
@@ -218,7 +219,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     title.id = ariaLabelId;
                     title.textContent = header;
                     var form = document.createElement("form");
-                    form.classList.add("s-modal--body", "d-flex", "flex__allcells6", "fw-wrap", "gs16");
+                    form.classList.add("s-modal--body", "d-flex", "fd-column", "flex__allcells6", "fw-wrap", "gs16");
                     var close = document.createElement("button");
                     close.classList.add("s-modal--close", "s-btn", "s-btn__muted");
                     close.type = "button";
@@ -417,7 +418,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     console.debug("[".concat(scriptName, "] missing editor input"));
                     return [2];
                 }
-                configModal = makeStacksModal("".concat(scriptName, "-config"), "Reference a Post");
+                configModal = makeStacksModal("".concat(scriptName, "-config"), "Reference a Post", { minWidth: 25 });
                 configForm = configModal.querySelector("form");
                 if (configForm) {
                     posts = scrapePostsOnPage();
@@ -451,7 +452,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     });
                     _a = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
                         placeholder: "Post link or text to search for",
-                        title: "Post Search"
+                        title: "Post Search",
+                        classes: ["m0", "mt12"]
                     }), 2), searchWrapper = _a[0], searchInput = _a[1];
                     searchInput.addEventListener("change", function () {
                     });

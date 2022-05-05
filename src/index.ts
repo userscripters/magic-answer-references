@@ -172,8 +172,17 @@ window.addEventListener("load", async () => {
      * @summary creates config modal element
      * @param id of the modal
      * @param header modal header
+     * @param options modal configuration
      */
-    const makeStacksModal = (id: string, header: string) => {
+    const makeStacksModal = (
+        id: string,
+        header: string,
+        options: {
+            minWidth: 0 | 10 | 25 | 50 | 75 | 100;
+        }
+    ) => {
+        const { minWidth } = options;
+
         const ariaLabelId = "modal-title";
         const ariaDescrId = "modal-description";
 
@@ -191,7 +200,7 @@ window.addEventListener("load", async () => {
         dataset.controller = "s-modal";
 
         const doc = document.createElement("div");
-        doc.classList.add("s-modal--dialog", "ps-relative", "hmx6", "wmn50");
+        doc.classList.add("s-modal--dialog", "ps-relative", "hmx6", `wmn${minWidth}`);
         doc.setAttribute("role", "document");
         doc.id = `${id}-document`;
         doc.draggable = true;
@@ -205,6 +214,7 @@ window.addEventListener("load", async () => {
         form.classList.add(
             "s-modal--body",
             "d-flex",
+            "fd-column",
             "flex__allcells6",
             "fw-wrap",
             "gs16"
@@ -528,7 +538,11 @@ window.addEventListener("load", async () => {
         return;
     }
 
-    const configModal = makeStacksModal(`${scriptName}-config`, "Reference a Post");
+    const configModal = makeStacksModal(
+        `${scriptName}-config`, "Reference a Post",
+        { minWidth: 25 }
+    );
+
     const configForm = configModal.querySelector("form");
     if (configForm) {
         const posts = scrapePostsOnPage();
@@ -573,7 +587,8 @@ window.addEventListener("load", async () => {
 
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {
             placeholder: "Post link or text to search for",
-            title: "Post Search"
+            title: "Post Search",
+            classes: ["m0", "mt12"]
         });
 
         searchInput.addEventListener("change", () => {
