@@ -494,6 +494,12 @@ window.addEventListener("load", async () => {
         return;
     }
 
+    const postTextInput = await waitForSelector<HTMLTextAreaElement>("#wmd-input");
+    if (!postTextInput) {
+        console.debug(`[${scriptName}] missing editor input`);
+        return;
+    }
+
     const configModal = makeStacksModal(`${scriptName}-config`, "Reference a Post");
     const configForm = configModal.querySelector("form");
     if (configForm) {
