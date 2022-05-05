@@ -543,7 +543,7 @@ window.addEventListener("load", async () => {
         const after = value.slice(selectionEnd - 1);
 
         const short = type === "answer" ? "a" : "q";
-        const postLink = `https://${location.origin}/${short}/${id}`;
+        const postLink = `${location.origin}/${short}/${id}`;
         const authorRef = authorLink ? `[${authorName}](${authorLink})` : authorName;
         const postRef = `${authorRef ? `${authorRef}'s ` : ""}[${type}](${postLink})`;
 
