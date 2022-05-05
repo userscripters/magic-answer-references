@@ -243,8 +243,12 @@ window.addEventListener("load", async () => {
      * @see https://stackoverflow.design/product/components/tables/
      * @summary makes a Stacks table
      * @param id table id
+     * @param options table configuration
      */
-    const makeStacksTable = (id: string, options: StacksTableOptions) => {
+    const makeStacksTable = (
+        id: string,
+        options: StacksTableOptions
+    ): [HTMLDivElement, HTMLTableElement] => {
         const { headers, cellGrid = [] } = options;
 
         const wrapper = document.createElement("div");
@@ -279,7 +283,7 @@ window.addEventListener("load", async () => {
         head.append(headRow);
         table.append(head, body);
         wrapper.append(table);
-        return wrapper;
+        return [wrapper, table];
     };
 
     /**
@@ -557,7 +561,7 @@ window.addEventListener("load", async () => {
             muted: true
         };
 
-        const refTable = makeStacksTable(`${scriptName}-current-posts`, {
+        const [refTableWrapper] = makeStacksTable(`${scriptName}-current-posts`, {
             headers: ["Type", "Author", "Votes", "Actions"],
             cellGrid: [...posts].map(([id, info]) => {
                 const { authorName, authorLink, container, type, votes } = info;
@@ -599,7 +603,7 @@ window.addEventListener("load", async () => {
             // search for posts
         });
 
-        configForm.append(refTable, searchWrapper);
+        configForm.append(refTableWrapper, searchWrapper);
     }
 
     document.body.append(configModal);
