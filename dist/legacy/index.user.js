@@ -130,9 +130,9 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTableRow, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, actionBtnConfig, postInfoToTableRowConfig, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store, seAPIkeyKey, key_1, apiPostCache_1, refBtn;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTableRow, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, actionBtnConfig, postInfoToTableRowConfig, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store_1, seAPIkeyKey_1, key_1, _c, apiKeyWrapper, apiKeyInput_1, apiPostCache_1, refBtn;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
             case 0:
                 scriptName = "magic-answer-references";
                 API_BASE = "https://api.stackexchange.com";
@@ -350,8 +350,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     var rules = [
                         ".".concat(scriptName, ".wmd-button > .svg-icon {\n                margin-top: 2px;\n                color: var(--black-600);\n            }"),
                         ".".concat(scriptName, ".wmd-button > .svg-icon:hover {\n                color: var(--black-900);\n            }"),
-                        "table.".concat(scriptName, " td:first-child {\n                cursor: pointer;\n            }"),
-                        "table.".concat(scriptName, " thead {\n                position: sticky;\n                top: -1px;\n                z-index: 9999;\n            }"),
+                        ".".concat(scriptName, ".s-table-container td:first-child {\n                cursor: pointer;\n            }"),
+                        ".".concat(scriptName, ".s-table-container thead {\n                position: sticky;\n                top: -1px;\n                z-index: 9999;\n            }"),
                         ".s-table td {\n                border-bottom: 1px solid var(--bc-medium);\n            }"
                     ];
                     rules.forEach(function (rule) { return sheet.insertRule(rule); });
@@ -522,21 +522,21 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 }
                 return [4, waitForSelector("#wmd-button-row")];
             case 1:
-                menu = _c.sent();
+                menu = _d.sent();
                 if (!menu) {
                     console.debug("[".concat(scriptName, "] missing editor menu"));
                     return [2];
                 }
                 return [4, waitForSelector("#wmd-snippet-button")];
             case 2:
-                snippetBtn = _c.sent();
+                snippetBtn = _d.sent();
                 if (!snippetBtn) {
                     console.debug("[".concat(scriptName, "] missing editor snippet button"));
                     return [2];
                 }
                 return [4, waitForSelector("#wmd-input")];
             case 3:
-                postTextInput = _c.sent();
+                postTextInput = _d.sent();
                 if (!postTextInput) {
                     console.debug("[".concat(scriptName, "] missing editor input"));
                     return [2];
@@ -559,23 +559,30 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     classes: ["m0", "mt16"]
                 }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
                 storage = Store.locateStorage();
-                store = new Store.default(scriptName, storage);
-                seAPIkeyKey = "se-api-key";
-                return [4, store.load(seAPIkeyKey, "")];
+                store_1 = new Store.default(scriptName, storage);
+                seAPIkeyKey_1 = "se-api-key";
+                return [4, store_1.load(seAPIkeyKey_1, "")];
             case 4:
-                key_1 = _c.sent();
-                return [4, store.save(seAPIkeyKey, key_1)];
+                key_1 = _d.sent();
+                return [4, store_1.save(seAPIkeyKey_1, key_1)];
             case 5:
-                _c.sent();
+                _d.sent();
+                _c = __read(makeStacksTextInput("".concat(scriptName, "-").concat(seAPIkeyKey_1), {
+                    placeholder: "SE API key (advanced search)",
+                    title: "API Key",
+                    classes: ["m0", "mt16"],
+                    value: key_1
+                }), 2), apiKeyWrapper = _c[0], apiKeyInput_1 = _c[1];
+                apiKeyInput_1.addEventListener("change", function () { return store_1.save(seAPIkeyKey_1, apiKeyInput_1.value); });
                 apiPostCache_1 = new Map();
                 searchInput_1.addEventListener("input", function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var value, id, postRow, post, _a, body, link, post_type, score, owner, _b, cells, data, rows, rows_1, rows_1_1, row, body;
-                    var e_1, _c;
-                    return __generator(this, function (_d) {
-                        switch (_d.label) {
+                    var value, id, postRow, post, _a, _b, _c, body, link, post_type, score, owner, _d, cells, data, rows, rows_1, rows_1_1, row, body;
+                    var _e, e_1, _f;
+                    return __generator(this, function (_g) {
+                        switch (_g.label) {
                             case 0:
                                 value = searchInput_1.value;
-                                if (!isPostLink(value)) return [3, 2];
+                                if (!isPostLink(value)) return [3, 3];
                                 id = getQuestionId(value) || getAnswerId(value);
                                 if (!id)
                                     return [2];
@@ -585,18 +592,22 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                         postRow.hidden = false;
                                     return [2];
                                 }
-                                return [4, getPost(id, {
-                                        site: getAPIsite(value),
-                                        filter: "7W_5I0m30",
-                                        key: key_1
-                                    })];
-                            case 1:
-                                post = _d.sent();
+                                _a = getPost;
+                                _b = [id];
+                                _e = {
+                                    site: getAPIsite(value),
+                                    filter: "7W_5I0m30"
+                                };
+                                return [4, store_1.load(seAPIkeyKey_1, key_1)];
+                            case 1: return [4, _a.apply(void 0, _b.concat([(_e.key = _g.sent(),
+                                        _e)]))];
+                            case 2:
+                                post = _g.sent();
                                 if (!post)
                                     return [2];
                                 apiPostCache_1.set(id, post);
-                                _a = post.body, body = _a === void 0 ? "" : _a, link = post.link, post_type = post.post_type, score = post.score, owner = post.owner;
-                                _b = postInfoToTableRowConfig(id, {
+                                _c = post.body, body = _c === void 0 ? "" : _c, link = post.link, post_type = post.post_type, score = post.score, owner = post.owner;
+                                _d = postInfoToTableRowConfig(id, {
                                     body: body,
                                     id: id,
                                     link: link,
@@ -604,10 +615,10 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                     authorName: owner === null || owner === void 0 ? void 0 : owner.display_name,
                                     type: post_type,
                                     votes: score.toString()
-                                }), cells = _b.cells, data = _b.data;
+                                }), cells = _d.cells, data = _d.data;
                                 refTable_1.tBodies[0].append(makeStacksTableRow(cells, data));
                                 return [2];
-                            case 2:
+                            case 3:
                                 rows = refTable_1.rows;
                                 try {
                                     for (rows_1 = __values(rows), rows_1_1 = rows_1.next(); !rows_1_1.done; rows_1_1 = rows_1.next()) {
@@ -625,7 +636,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
                                 finally {
                                     try {
-                                        if (rows_1_1 && !rows_1_1.done && (_c = rows_1.return)) _c.call(rows_1);
+                                        if (rows_1_1 && !rows_1_1.done && (_f = rows_1.return)) _f.call(rows_1);
                                     }
                                     finally { if (e_1) throw e_1.error; }
                                 }
@@ -633,8 +644,8 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                         }
                     });
                 }); });
-                configForm.append(refTableWrapper, searchWrapper);
-                _c.label = 6;
+                configForm.append(refTableWrapper, searchWrapper, apiKeyWrapper);
+                _d.label = 6;
             case 6:
                 document.body.append(configModal);
                 refBtn = makeEditorButton("".concat(scriptName, "-reference"), "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", function () { return Stacks.showModal(configModal); });

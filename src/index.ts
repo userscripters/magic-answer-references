@@ -729,6 +729,15 @@ window.addEventListener("load", async () => {
         const key = await store.load(seAPIkeyKey, "");
         await store.save(seAPIkeyKey, key);
 
+        const [apiKeyWrapper, apiKeyInput] = makeStacksTextInput(`${scriptName}-${seAPIkeyKey}`, {
+            placeholder: "SE API key (advanced search)",
+            title: "API Key",
+            classes: ["m0", "mt16"],
+            value: key
+        });
+
+        apiKeyInput.addEventListener("change", () => store.save(seAPIkeyKey, apiKeyInput.value));
+
         const apiPostCache = new Map<string, StackExchangeAPI.Post>();
 
         searchInput.addEventListener("input", async () => {
@@ -747,7 +756,7 @@ window.addEventListener("load", async () => {
                 const post = await getPost(id, {
                     site: getAPIsite(value),
                     filter: "7W_5I0m30", // default + body + unsafe
-                    key
+                    key: await store.load(seAPIkeyKey, key)
                 });
                 if (!post) return;
 
@@ -783,7 +792,7 @@ window.addEventListener("load", async () => {
             }
         });
 
-        configForm.append(refTableWrapper, searchWrapper);
+        configForm.append(refTableWrapper, searchWrapper, apiKeyWrapper);
     }
 
     document.body.append(configModal);

@@ -248,10 +248,10 @@ window.addEventListener("load", async () => {
             `.${scriptName}.wmd-button > .svg-icon:hover {
                 color: var(--black-900);
             }`,
-            `table.${scriptName} td:first-child {
+            `.${scriptName}.s-table-container td:first-child {
                 cursor: pointer;
             }`,
-            `table.${scriptName} thead {
+            `.${scriptName}.s-table-container thead {
                 position: sticky;
                 top: -1px;
                 z-index: 9999;
@@ -445,6 +445,13 @@ window.addEventListener("load", async () => {
         const seAPIkeyKey = "se-api-key";
         const key = await store.load(seAPIkeyKey, "");
         await store.save(seAPIkeyKey, key);
+        const [apiKeyWrapper, apiKeyInput] = makeStacksTextInput(`${scriptName}-${seAPIkeyKey}`, {
+            placeholder: "SE API key (advanced search)",
+            title: "API Key",
+            classes: ["m0", "mt16"],
+            value: key
+        });
+        apiKeyInput.addEventListener("change", () => store.save(seAPIkeyKey, apiKeyInput.value));
         const apiPostCache = new Map();
         searchInput.addEventListener("input", async () => {
             const { value } = searchInput;
@@ -461,7 +468,7 @@ window.addEventListener("load", async () => {
                 const post = await getPost(id, {
                     site: getAPIsite(value),
                     filter: "7W_5I0m30",
-                    key
+                    key: await store.load(seAPIkeyKey, key)
                 });
                 if (!post)
                     return;
@@ -491,7 +498,7 @@ window.addEventListener("load", async () => {
                 row.hidden = !(body === null || body === void 0 ? void 0 : body.toLowerCase().includes(value.toLowerCase()));
             }
         });
-        configForm.append(refTableWrapper, searchWrapper);
+        configForm.append(refTableWrapper, searchWrapper, apiKeyWrapper);
     }
     document.body.append(configModal);
     const refBtn = makeEditorButton(`${scriptName}-reference`, "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", () => Stacks.showModal(configModal));
