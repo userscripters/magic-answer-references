@@ -25,6 +25,7 @@ type PostType = "answer" | "question";
 type PostInfo = {
     authorLink?: string;
     authorName?: string,
+    body: string;
     container: HTMLElement;
     id: string;
     type: PostType;
@@ -449,7 +450,10 @@ window.addEventListener("load", async () => {
             return;
         }
 
-        const info: PostInfo = { container, id, type, votes };
+        const bodyElem = container.querySelector(".js-post-body");
+        const body = bodyElem?.textContent?.trim() || "";
+
+        const info: PostInfo = { body, container, id, type, votes };
 
         const authorLink = container.querySelector<HTMLAnchorElement>("[itemprop=author] a");
         if (authorLink) {
