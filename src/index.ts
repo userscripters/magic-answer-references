@@ -533,9 +533,15 @@ window.addEventListener("load", async () => {
     if (configForm) {
         const posts = scrapePostsOnPage();
 
+        const actionBtnConfig: StacksButtonOptions = {
+            classes: ["s-btn__xs", "w100"],
+            type: "outlined",
+            muted: true
+        };
+
         const refTable = makeStacksTable(`${scriptName}-current-posts`, {
-            headers: ["Type", "Author", "Votes"],
-            cellGrid: [...posts].map(([_id, info]) => {
+            headers: ["Type", "Author", "Votes", "Actions"],
+            cellGrid: [...posts].map(([id, info]) => {
                 const { authorName, authorLink, container, type, votes } = info;
 
                 const author = authorLink && authorName ?
@@ -550,7 +556,15 @@ window.addEventListener("load", async () => {
                     window.scrollTo(left + scrollX, top + scrollY);
                 });
 
-                return [postType, author, votes];
+                const actionBtn = makeStacksButton(
+                    `${scriptName}-ref-${id}`,
+                    "ref",
+                    actionBtnConfig
+                );
+
+                actionBtn.addEventListener("click", () => insertPostReference(postTextInput, info));
+
+                return [postType, author, votes, actionBtn];
             })
         });
 
