@@ -734,7 +734,9 @@ window.addEventListener("load", async () => {
                 }
 
                 const post = await getPost(id, {
-                    key, site: getAPIsite(value)
+                    site: getAPIsite(value),
+                    filter: "7W_5I0m30", // default + body + unsafe
+                    key
                 });
                 if (!post) return;
 

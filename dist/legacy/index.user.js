@@ -431,7 +431,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     var before = value.slice(0, selectionStart + 1);
                     var after = value.slice(selectionEnd - 1);
                     var short = type === "answer" ? "a" : "q";
-                    var postLink = "https://".concat(location.origin, "/").concat(short, "/").concat(id);
+                    var postLink = "".concat(location.origin, "/").concat(short, "/").concat(id);
                     var authorRef = authorLink ? "[".concat(authorName, "](").concat(authorLink, ")") : authorName;
                     var postRef = "".concat(authorRef ? "".concat(authorRef, "'s ") : "", "[").concat(type, "](").concat(postLink, ")");
                     input.value = isCollapsed ? value + postRef : before + postRef + after;
@@ -583,8 +583,9 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                     return [2];
                                 }
                                 return [4, getPost(id, {
-                                        key: key_1,
-                                        site: getAPIsite(value)
+                                        site: getAPIsite(value),
+                                        filter: "7W_5I0m30",
+                                        key: key_1
                                     })];
                             case 1:
                                 post = _d.sent();

@@ -330,7 +330,7 @@ window.addEventListener("load", async () => {
         const before = value.slice(0, selectionStart + 1);
         const after = value.slice(selectionEnd - 1);
         const short = type === "answer" ? "a" : "q";
-        const postLink = `https://${location.origin}/${short}/${id}`;
+        const postLink = `${location.origin}/${short}/${id}`;
         const authorRef = authorLink ? `[${authorName}](${authorLink})` : authorName;
         const postRef = `${authorRef ? `${authorRef}'s ` : ""}[${type}](${postLink})`;
         input.value = isCollapsed ? value + postRef : before + postRef + after;
@@ -451,7 +451,9 @@ window.addEventListener("load", async () => {
                     return;
                 }
                 const post = await getPost(id, {
-                    key, site: getAPIsite(value)
+                    site: getAPIsite(value),
+                    filter: "7W_5I0m30",
+                    key
                 });
                 if (!post)
                     return;
