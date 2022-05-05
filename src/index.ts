@@ -16,7 +16,10 @@ type StacksButtonOptions = {
 };
 
 type StacksTableOptions = {
-    cellGrid?: Array<string | Node>[];
+    rows: {
+        cells: Array<string | Node>,
+        data?: object;
+    }[]
     headers: Array<string | Node>;
 };
 
@@ -249,7 +252,7 @@ window.addEventListener("load", async () => {
         id: string,
         options: StacksTableOptions
     ): [HTMLDivElement, HTMLTableElement] => {
-        const { headers, cellGrid = [] } = options;
+        const { headers, rows = [] } = options;
 
         const wrapper = document.createElement("div");
         wrapper.classList.add("s-table-container");
@@ -268,8 +271,9 @@ window.addEventListener("load", async () => {
         }));
 
         const body = document.createElement("tbody");
-        body.append(...cellGrid.map((cells) => {
+        body.append(...rows.map(({ cells, data }) => {
             const row = document.createElement("tr");
+            Object.assign(row.dataset, data);
 
             row.append(...cells.map((content) => {
                 const td = document.createElement("td");
@@ -561,10 +565,10 @@ window.addEventListener("load", async () => {
             muted: true
         };
 
-        const [refTableWrapper] = makeStacksTable(`${scriptName}-current-posts`, {
+        const [refTableWrapper, refTable] = makeStacksTable(`${scriptName}-current-posts`, {
             headers: ["Type", "Author", "Votes", "Actions"],
-            cellGrid: [...posts].map(([id, info]) => {
-                const { authorName, authorLink, container, type, votes } = info;
+            rows: [...posts].map(([id, info]) => {
+                const { authorName, authorLink, body, container, type, votes } = info;
 
                 const author = authorLink && authorName ?
                     makeAnchor(authorLink, authorName) :
@@ -589,7 +593,10 @@ window.addEventListener("load", async () => {
                     insertPostReference(postTextInput, info);
                 });
 
-                return [postType, author, votes, actionBtn];
+                return {
+                    cells: [postType, author, votes, actionBtn],
+                    data: { body }
+                };
             })
         });
 
@@ -599,8 +606,28 @@ window.addEventListener("load", async () => {
             classes: ["m0", "mt12"]
         });
 
-        searchInput.addEventListener("change", () => {
-            // search for posts
+        const isPostLink = (_text: string) => false;
+
+        searchInput.addEventListener("input", () => {
+            const { value } = searchInput;
+
+            if (isPostLink(value)) {
+                // TODO: fetch post and append to table
+                return;
+            }
+
+            const { rows } = refTable;
+            for (const row of rows) {
+                if (row === rows[0]) continue;
+
+                if (!value) {
+                    row.hidden = false;
+                    continue;
+                }
+
+                const { dataset: { body } } = row;
+                row.hidden = !body?.includes(value);
+            }
         });
 
         configForm.append(refTableWrapper, searchWrapper);

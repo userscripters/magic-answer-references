@@ -93,10 +93,21 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, refTable, _a, searchWrapper, searchInput, refBtn;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    var scriptName, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, actionBtnConfig_1, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, isPostLink_1, refBtn;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
                 scriptName = "magic-answer-references";
                 waitForSelector = function (selector, context) {
@@ -232,7 +243,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     return wrap;
                 };
                 makeStacksTable = function (id, options) {
-                    var headers = options.headers, _a = options.cellGrid, cellGrid = _a === void 0 ? [] : _a;
+                    var headers = options.headers, _a = options.rows, rows = _a === void 0 ? [] : _a;
                     var wrapper = document.createElement("div");
                     wrapper.classList.add("s-table-container");
                     var table = document.createElement("table");
@@ -247,8 +258,10 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                         return th;
                     })), false));
                     var body = document.createElement("tbody");
-                    body.append.apply(body, __spreadArray([], __read(cellGrid.map(function (cells) {
+                    body.append.apply(body, __spreadArray([], __read(rows.map(function (_a) {
+                        var cells = _a.cells, data = _a.data;
                         var row = document.createElement("tr");
+                        Object.assign(row.dataset, data);
                         row.append.apply(row, __spreadArray([], __read(cells.map(function (content) {
                             var td = document.createElement("td");
                             td.append(content);
@@ -259,7 +272,7 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     head.append(headRow);
                     table.append(head, body);
                     wrapper.append(table);
-                    return wrapper;
+                    return [wrapper, table];
                 };
                 makeStacksTextInput = function (id, options) {
                     var _a;
@@ -341,24 +354,26 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                     return wrapper;
                 };
                 scrapePost = function (container, type) {
-                    var _a, _b, _c;
+                    var _a, _b, _c, _d;
                     var voteCell = container.querySelector(".js-vote-count");
                     var votes = ((_a = voteCell === null || voteCell === void 0 ? void 0 : voteCell.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || "0";
-                    var _d = container.dataset, answerid = _d.answerid, questionid = _d.questionid;
+                    var _e = container.dataset, answerid = _e.answerid, questionid = _e.questionid;
                     var id = type === "answer" ? answerid : questionid;
                     if (!id) {
                         console.debug("[".concat(scriptName, "] post is missing an id"));
                         return;
                     }
-                    var info = { container: container, id: id, type: type, votes: votes };
+                    var bodyElem = container.querySelector(".js-post-body");
+                    var body = ((_b = bodyElem === null || bodyElem === void 0 ? void 0 : bodyElem.textContent) === null || _b === void 0 ? void 0 : _b.trim()) || "";
+                    var info = { body: body, container: container, id: id, type: type, votes: votes };
                     var authorLink = container.querySelector("[itemprop=author] a");
                     if (authorLink) {
                         info.authorLink = authorLink.href;
-                        info.authorName = (_b = authorLink.textContent) === null || _b === void 0 ? void 0 : _b.trim();
+                        info.authorName = (_c = authorLink.textContent) === null || _c === void 0 ? void 0 : _c.trim();
                     }
                     if (!authorLink) {
                         var nameElement = container.querySelector("[itemprop=name]");
-                        info.authorName = (_c = nameElement === null || nameElement === void 0 ? void 0 : nameElement.textContent) === null || _c === void 0 ? void 0 : _c.trim();
+                        info.authorName = (_d = nameElement === null || nameElement === void 0 ? void 0 : nameElement.textContent) === null || _d === void 0 ? void 0 : _d.trim();
                     }
                     return info;
                 };
@@ -399,21 +414,21 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 }
                 return [4, waitForSelector("#wmd-button-row")];
             case 1:
-                menu = _b.sent();
+                menu = _c.sent();
                 if (!menu) {
                     console.debug("[".concat(scriptName, "] missing editor menu"));
                     return [2];
                 }
                 return [4, waitForSelector("#wmd-snippet-button")];
             case 2:
-                snippetBtn = _b.sent();
+                snippetBtn = _c.sent();
                 if (!snippetBtn) {
                     console.debug("[".concat(scriptName, "] missing editor snippet button"));
                     return [2];
                 }
                 return [4, waitForSelector("#wmd-input")];
             case 3:
-                postTextInput = _b.sent();
+                postTextInput = _c.sent();
                 if (!postTextInput) {
                     console.debug("[".concat(scriptName, "] missing editor input"));
                     return [2];
@@ -427,11 +442,11 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                         type: "outlined",
                         muted: true
                     };
-                    refTable = makeStacksTable("".concat(scriptName, "-current-posts"), {
+                    _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
                         headers: ["Type", "Author", "Votes", "Actions"],
-                        cellGrid: __spreadArray([], __read(posts), false).map(function (_a) {
+                        rows: __spreadArray([], __read(posts), false).map(function (_a) {
                             var _b = __read(_a, 2), id = _b[0], info = _b[1];
-                            var authorName = info.authorName, authorLink = info.authorLink, container = info.container, type = info.type, votes = info.votes;
+                            var authorName = info.authorName, authorLink = info.authorLink, body = info.body, container = info.container, type = info.type, votes = info.votes;
                             var author = authorLink && authorName ?
                                 makeAnchor(authorLink, authorName) :
                                 authorName || "";
@@ -447,17 +462,43 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                                 ev.preventDefault();
                                 insertPostReference(postTextInput, info);
                             });
-                            return [postType, author, votes, actionBtn];
+                            return {
+                                cells: [postType, author, votes, actionBtn],
+                                data: { body: body }
+                            };
                         })
-                    });
-                    _a = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
+                    }), 2), refTableWrapper = _a[0], refTable_1 = _a[1];
+                    _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
                         placeholder: "Post link or text to search for",
                         title: "Post Search",
                         classes: ["m0", "mt12"]
-                    }), 2), searchWrapper = _a[0], searchInput = _a[1];
-                    searchInput.addEventListener("change", function () {
+                    }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
+                    isPostLink_1 = function (_text) { return false; };
+                    searchInput_1.addEventListener("input", function () {
+                        var e_1, _a;
+                        var value = searchInput_1.value;
+                        if (!value)
+                            return;
+                        if (isPostLink_1(value)) {
+                            return;
+                        }
+                        var rows = refTable_1.rows;
+                        try {
+                            for (var rows_1 = __values(rows), rows_1_1 = rows_1.next(); !rows_1_1.done; rows_1_1 = rows_1.next()) {
+                                var row = rows_1_1.value;
+                                var body = row.dataset.body;
+                                row.hidden = !!(body === null || body === void 0 ? void 0 : body.includes(value));
+                            }
+                        }
+                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                        finally {
+                            try {
+                                if (rows_1_1 && !rows_1_1.done && (_a = rows_1.return)) _a.call(rows_1);
+                            }
+                            finally { if (e_1) throw e_1.error; }
+                        }
                     });
-                    configForm.append(refTable, searchWrapper);
+                    configForm.append(refTableWrapper, searchWrapper);
                 }
                 document.body.append(configModal);
                 refBtn = makeEditorButton("".concat(scriptName, "-reference"), "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", function () {

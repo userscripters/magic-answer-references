@@ -162,7 +162,7 @@ window.addEventListener("load", async () => {
         return wrap;
     };
     const makeStacksTable = (id, options) => {
-        const { headers, cellGrid = [] } = options;
+        const { headers, rows = [] } = options;
         const wrapper = document.createElement("div");
         wrapper.classList.add("s-table-container");
         const table = document.createElement("table");
@@ -177,8 +177,9 @@ window.addEventListener("load", async () => {
             return th;
         }));
         const body = document.createElement("tbody");
-        body.append(...cellGrid.map((cells) => {
+        body.append(...rows.map(({ cells, data }) => {
             const row = document.createElement("tr");
+            Object.assign(row.dataset, data);
             row.append(...cells.map((content) => {
                 const td = document.createElement("td");
                 td.append(content);
@@ -189,7 +190,7 @@ window.addEventListener("load", async () => {
         head.append(headRow);
         table.append(head, body);
         wrapper.append(table);
-        return wrapper;
+        return [wrapper, table];
     };
     const makeStacksTextInput = (id, options = {}) => {
         const { classes = [], placeholder = "", title = "", value = "", } = options;
@@ -272,7 +273,7 @@ window.addEventListener("load", async () => {
         return wrapper;
     };
     const scrapePost = (container, type) => {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         const voteCell = container.querySelector(".js-vote-count");
         const votes = ((_a = voteCell === null || voteCell === void 0 ? void 0 : voteCell.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || "0";
         const { dataset: { answerid, questionid } } = container;
@@ -281,15 +282,17 @@ window.addEventListener("load", async () => {
             console.debug(`[${scriptName}] post is missing an id`);
             return;
         }
-        const info = { container, id, type, votes };
+        const bodyElem = container.querySelector(".js-post-body");
+        const body = ((_b = bodyElem === null || bodyElem === void 0 ? void 0 : bodyElem.textContent) === null || _b === void 0 ? void 0 : _b.trim()) || "";
+        const info = { body, container, id, type, votes };
         const authorLink = container.querySelector("[itemprop=author] a");
         if (authorLink) {
             info.authorLink = authorLink.href;
-            info.authorName = (_b = authorLink.textContent) === null || _b === void 0 ? void 0 : _b.trim();
+            info.authorName = (_c = authorLink.textContent) === null || _c === void 0 ? void 0 : _c.trim();
         }
         if (!authorLink) {
             const nameElement = container.querySelector("[itemprop=name]");
-            info.authorName = (_c = nameElement === null || nameElement === void 0 ? void 0 : nameElement.textContent) === null || _c === void 0 ? void 0 : _c.trim();
+            info.authorName = (_d = nameElement === null || nameElement === void 0 ? void 0 : nameElement.textContent) === null || _d === void 0 ? void 0 : _d.trim();
         }
         return info;
     };
@@ -352,10 +355,10 @@ window.addEventListener("load", async () => {
             type: "outlined",
             muted: true
         };
-        const refTable = makeStacksTable(`${scriptName}-current-posts`, {
+        const [refTableWrapper, refTable] = makeStacksTable(`${scriptName}-current-posts`, {
             headers: ["Type", "Author", "Votes", "Actions"],
-            cellGrid: [...posts].map(([id, info]) => {
-                const { authorName, authorLink, container, type, votes } = info;
+            rows: [...posts].map(([id, info]) => {
+                const { authorName, authorLink, body, container, type, votes } = info;
                 const author = authorLink && authorName ?
                     makeAnchor(authorLink, authorName) :
                     authorName || "";
@@ -371,7 +374,10 @@ window.addEventListener("load", async () => {
                     ev.preventDefault();
                     insertPostReference(postTextInput, info);
                 });
-                return [postType, author, votes, actionBtn];
+                return {
+                    cells: [postType, author, votes, actionBtn],
+                    data: { body }
+                };
             })
         });
         const [searchWrapper, searchInput] = makeStacksTextInput(`${scriptName}-search`, {
@@ -379,9 +385,21 @@ window.addEventListener("load", async () => {
             title: "Post Search",
             classes: ["m0", "mt12"]
         });
-        searchInput.addEventListener("change", () => {
+        const isPostLink = (_text) => false;
+        searchInput.addEventListener("input", () => {
+            const { value } = searchInput;
+            if (!value)
+                return;
+            if (isPostLink(value)) {
+                return;
+            }
+            const { rows } = refTable;
+            for (const row of rows) {
+                const { dataset: { body } } = row;
+                row.hidden = !!(body === null || body === void 0 ? void 0 : body.includes(value));
+            }
         });
-        configForm.append(refTable, searchWrapper);
+        configForm.append(refTableWrapper, searchWrapper);
     }
     document.body.append(configModal);
     const refBtn = makeEditorButton(`${scriptName}-reference`, "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", () => {
