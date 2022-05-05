@@ -130,13 +130,14 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 window.addEventListener("load", function () { return __awaiter(void 0, void 0, void 0, function () {
-    var scriptName, API_BASE, API_VER, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTableRow, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, actionBtnConfig, postInfoToTableRowConfig, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, storage, store_1, seAPIkeyKey_1, key_1, _c, apiKeyWrapper, apiKeyInput_1, apiPostCache_1, refBtn;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+    var scriptName, API_BASE, API_VER, API_KEY, waitForSelector, makeStacksIcon, makeDraggable, makeStacksModal, makeStacksTableRow, makeStacksTable, makeStacksTextInput, makeAnchor, appendStyles, makeStacksButton, makeEditorButton, scrapePost, scrapePostsOnPage, insertPostReference, getQuestionId, getAnswerId, postLinkExpr, isPostLink, getAPIsite, delay, getPost, actionBtnConfig, postInfoToTableRowConfig, editor, menu, snippetBtn, postTextInput, configModal, configForm, posts, _a, refTableWrapper, refTable_1, _b, searchWrapper, searchInput_1, apiPostCache_1, refBtn;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
                 scriptName = "magic-answer-references";
                 API_BASE = "https://api.stackexchange.com";
                 API_VER = 2.3;
+                API_KEY = "pkW3HOc0hP25As5oDPVYxg((";
                 waitForSelector = function (selector, context) {
                     if (context === void 0) { context = document; }
                     return new Promise(function (resolve) {
@@ -552,132 +553,111 @@ window.addEventListener("load", function () { return __awaiter(void 0, void 0, v
                 }
                 return [4, waitForSelector("#wmd-button-row")];
             case 1:
-                menu = _d.sent();
+                menu = _c.sent();
                 if (!menu) {
                     console.debug("[".concat(scriptName, "] missing editor menu"));
                     return [2];
                 }
                 return [4, waitForSelector("#wmd-snippet-button")];
             case 2:
-                snippetBtn = _d.sent();
+                snippetBtn = _c.sent();
                 if (!snippetBtn) {
                     console.debug("[".concat(scriptName, "] missing editor snippet button"));
                     return [2];
                 }
                 return [4, waitForSelector("#wmd-input")];
             case 3:
-                postTextInput = _d.sent();
+                postTextInput = _c.sent();
                 if (!postTextInput) {
                     console.debug("[".concat(scriptName, "] missing editor input"));
                     return [2];
                 }
                 configModal = makeStacksModal("".concat(scriptName, "-config"), "Reference a Post", { minWidth: 25 });
                 configForm = configModal.querySelector("form");
-                if (!configForm) return [3, 6];
-                posts = scrapePostsOnPage();
-                _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
-                    classes: [scriptName, "hmx2"],
-                    headers: ["Type", "Author", "Score", "Actions"],
-                    rows: __spreadArray([], __read(posts), false).map(function (_a) {
-                        var _b = __read(_a, 2), id = _b[0], info = _b[1];
-                        return postInfoToTableRowConfig(id, info);
-                    }),
-                    sortable: true
-                }), 2), refTableWrapper = _a[0], refTable_1 = _a[1];
-                _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
-                    placeholder: "Post link or text to search for",
-                    title: "Post Search",
-                    classes: ["m0", "mt16"]
-                }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
-                storage = Store.locateStorage();
-                store_1 = new Store.default(scriptName, storage);
-                seAPIkeyKey_1 = "se-api-key";
-                return [4, store_1.load(seAPIkeyKey_1, "")];
-            case 4:
-                key_1 = _d.sent();
-                return [4, store_1.save(seAPIkeyKey_1, key_1)];
-            case 5:
-                _d.sent();
-                _c = __read(makeStacksTextInput("".concat(scriptName, "-").concat(seAPIkeyKey_1), {
-                    placeholder: "SE API key (advanced search)",
-                    title: "API Key",
-                    classes: ["m0", "mt16"],
-                    value: key_1
-                }), 2), apiKeyWrapper = _c[0], apiKeyInput_1 = _c[1];
-                apiKeyInput_1.addEventListener("change", function () { return store_1.save(seAPIkeyKey_1, apiKeyInput_1.value); });
-                apiPostCache_1 = new Map();
-                searchInput_1.addEventListener("input", function () { return __awaiter(void 0, void 0, void 0, function () {
-                    var value, id, postRow, post, _a, _b, _c, body, link, post_type, score, owner, _d, cells, data, rows, rows_1, rows_1_1, row, body;
-                    var _e, e_1, _f;
-                    return __generator(this, function (_g) {
-                        switch (_g.label) {
-                            case 0:
-                                value = searchInput_1.value;
-                                if (!isPostLink(value)) return [3, 3];
-                                id = getQuestionId(value) || getAnswerId(value);
-                                if (!id)
-                                    return [2];
-                                if (apiPostCache_1.get(id)) {
-                                    postRow = refTable_1.querySelector("[data-id=".concat(id, "]"));
-                                    if (postRow)
-                                        postRow.hidden = false;
-                                    return [2];
-                                }
-                                _a = getPost;
-                                _b = [id];
-                                _e = {
-                                    site: getAPIsite(value),
-                                    filter: "7W_5I0m30"
-                                };
-                                return [4, store_1.load(seAPIkeyKey_1, key_1)];
-                            case 1: return [4, _a.apply(void 0, _b.concat([(_e.key = _g.sent(),
-                                        _e)]))];
-                            case 2:
-                                post = _g.sent();
-                                if (!post)
-                                    return [2];
-                                apiPostCache_1.set(id, post);
-                                _c = post.body, body = _c === void 0 ? "" : _c, link = post.link, post_type = post.post_type, score = post.score, owner = post.owner;
-                                _d = postInfoToTableRowConfig(id, {
-                                    body: body,
-                                    id: id,
-                                    link: link,
-                                    authorLink: owner === null || owner === void 0 ? void 0 : owner.link,
-                                    authorName: owner === null || owner === void 0 ? void 0 : owner.display_name,
-                                    type: post_type,
-                                    votes: score.toString()
-                                }), cells = _d.cells, data = _d.data;
-                                refTable_1.tBodies[0].append(makeStacksTableRow(cells, data));
-                                return [2];
-                            case 3:
-                                rows = refTable_1.rows;
-                                try {
-                                    for (rows_1 = __values(rows), rows_1_1 = rows_1.next(); !rows_1_1.done; rows_1_1 = rows_1.next()) {
-                                        row = rows_1_1.value;
-                                        if (row === rows[0])
-                                            continue;
-                                        if (!value) {
-                                            row.hidden = false;
-                                            continue;
-                                        }
-                                        body = row.dataset.body;
-                                        row.hidden = !(body === null || body === void 0 ? void 0 : body.toLowerCase().includes(value.toLowerCase()));
+                if (configForm) {
+                    posts = scrapePostsOnPage();
+                    _a = __read(makeStacksTable("".concat(scriptName, "-current-posts"), {
+                        classes: [scriptName, "hmx2"],
+                        headers: ["Type", "Author", "Score", "Actions"],
+                        rows: __spreadArray([], __read(posts), false).map(function (_a) {
+                            var _b = __read(_a, 2), id = _b[0], info = _b[1];
+                            return postInfoToTableRowConfig(id, info);
+                        }),
+                        sortable: true
+                    }), 2), refTableWrapper = _a[0], refTable_1 = _a[1];
+                    _b = __read(makeStacksTextInput("".concat(scriptName, "-search"), {
+                        placeholder: "Post link or text to search for",
+                        title: "Post Search",
+                        classes: ["m0", "mt16"]
+                    }), 2), searchWrapper = _b[0], searchInput_1 = _b[1];
+                    apiPostCache_1 = new Map();
+                    searchInput_1.addEventListener("input", function () { return __awaiter(void 0, void 0, void 0, function () {
+                        var value, id, postRow, post, _a, body, link, post_type, score, owner, _b, cells, data, rows, rows_1, rows_1_1, row, body;
+                        var e_1, _c;
+                        return __generator(this, function (_d) {
+                            switch (_d.label) {
+                                case 0:
+                                    value = searchInput_1.value;
+                                    if (!isPostLink(value)) return [3, 2];
+                                    id = getQuestionId(value) || getAnswerId(value);
+                                    if (!id)
+                                        return [2];
+                                    if (apiPostCache_1.get(id)) {
+                                        postRow = refTable_1.querySelector("[data-id=".concat(id, "]"));
+                                        if (postRow)
+                                            postRow.hidden = false;
+                                        return [2];
                                     }
-                                }
-                                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                                finally {
+                                    return [4, getPost(id, {
+                                            site: getAPIsite(value),
+                                            filter: "7W_5I0m30",
+                                            key: API_KEY
+                                        })];
+                                case 1:
+                                    post = _d.sent();
+                                    if (!post)
+                                        return [2];
+                                    apiPostCache_1.set(id, post);
+                                    _a = post.body, body = _a === void 0 ? "" : _a, link = post.link, post_type = post.post_type, score = post.score, owner = post.owner;
+                                    _b = postInfoToTableRowConfig(id, {
+                                        body: body,
+                                        id: id,
+                                        link: link,
+                                        authorLink: owner === null || owner === void 0 ? void 0 : owner.link,
+                                        authorName: owner === null || owner === void 0 ? void 0 : owner.display_name,
+                                        type: post_type,
+                                        votes: score.toString()
+                                    }), cells = _b.cells, data = _b.data;
+                                    refTable_1.tBodies[0].append(makeStacksTableRow(cells, data));
+                                    return [2];
+                                case 2:
+                                    rows = refTable_1.rows;
                                     try {
-                                        if (rows_1_1 && !rows_1_1.done && (_f = rows_1.return)) _f.call(rows_1);
+                                        for (rows_1 = __values(rows), rows_1_1 = rows_1.next(); !rows_1_1.done; rows_1_1 = rows_1.next()) {
+                                            row = rows_1_1.value;
+                                            if (row === rows[0])
+                                                continue;
+                                            if (!value) {
+                                                row.hidden = false;
+                                                continue;
+                                            }
+                                            body = row.dataset.body;
+                                            row.hidden = !(body === null || body === void 0 ? void 0 : body.toLowerCase().includes(value.toLowerCase()));
+                                        }
                                     }
-                                    finally { if (e_1) throw e_1.error; }
-                                }
-                                return [2];
-                        }
-                    });
-                }); });
-                configForm.append(refTableWrapper, searchWrapper, apiKeyWrapper);
-                _d.label = 6;
-            case 6:
+                                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                                    finally {
+                                        try {
+                                            if (rows_1_1 && !rows_1_1.done && (_c = rows_1.return)) _c.call(rows_1);
+                                        }
+                                        finally { if (e_1) throw e_1.error; }
+                                    }
+                                    return [2];
+                            }
+                        });
+                    }); });
+                    configForm.append(refTableWrapper, searchWrapper);
+                }
                 document.body.append(configModal);
                 refBtn = makeEditorButton("".concat(scriptName, "-reference"), "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", function () { return Stacks.showModal(configModal); });
                 snippetBtn.after(refBtn);

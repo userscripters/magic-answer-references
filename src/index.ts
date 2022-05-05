@@ -52,6 +52,7 @@ window.addEventListener("load", async () => {
 
     const API_BASE = "https://api.stackexchange.com";
     const API_VER = 2.3;
+    const API_KEY = "pkW3HOc0hP25As5oDPVYxg((";
 
     /**
      * @summary waits for an {@link Element} to appear in DOM
@@ -800,21 +801,6 @@ window.addEventListener("load", async () => {
             classes: ["m0", "mt16"]
         });
 
-        const storage = Store.locateStorage();
-        const store = new Store.default(scriptName, storage);
-        const seAPIkeyKey = "se-api-key";
-        const key = await store.load(seAPIkeyKey, "");
-        await store.save(seAPIkeyKey, key);
-
-        const [apiKeyWrapper, apiKeyInput] = makeStacksTextInput(`${scriptName}-${seAPIkeyKey}`, {
-            placeholder: "SE API key (advanced search)",
-            title: "API Key",
-            classes: ["m0", "mt16"],
-            value: key
-        });
-
-        apiKeyInput.addEventListener("change", () => store.save(seAPIkeyKey, apiKeyInput.value));
-
         const apiPostCache = new Map<string, StackExchangeAPI.Post>();
 
         searchInput.addEventListener("input", async () => {
@@ -833,7 +819,7 @@ window.addEventListener("load", async () => {
                 const post = await getPost(id, {
                     site: getAPIsite(value),
                     filter: "7W_5I0m30", // default + body + unsafe
-                    key: await store.load(seAPIkeyKey, key)
+                    key: API_KEY
                 });
                 if (!post) return;
 
@@ -869,7 +855,7 @@ window.addEventListener("load", async () => {
             }
         });
 
-        configForm.append(refTableWrapper, searchWrapper, apiKeyWrapper);
+        configForm.append(refTableWrapper, searchWrapper);
     }
 
     document.body.append(configModal);
