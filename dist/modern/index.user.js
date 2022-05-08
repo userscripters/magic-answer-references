@@ -383,13 +383,12 @@ window.addEventListener("load", () => {
     };
     const insertPostReference = (input, info) => {
         const { selectionStart, selectionEnd, value } = input;
-        const isCollapsed = selectionStart === selectionEnd;
         const { authorLink, authorName, link, type } = info;
-        const before = value.slice(0, selectionStart + 1);
-        const after = value.slice(selectionEnd - 1);
+        const before = value.slice(0, selectionStart);
+        const after = value.slice(selectionEnd);
         const authorRef = authorLink ? `[${authorName}](${authorLink})` : authorName;
         const postRef = `${authorRef ? `${authorRef}'s ` : ""}[${type}](${link})`;
-        input.value = isCollapsed ? value + postRef : before + postRef + after;
+        input.value = before + postRef + after;
         input.dispatchEvent(new Event("input"));
         document.dispatchEvent(new CustomEvent(`${scriptName}-close-config`));
     };

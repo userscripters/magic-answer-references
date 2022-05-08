@@ -476,13 +476,12 @@ window.addEventListener("load", function () {
     };
     var insertPostReference = function (input, info) {
         var selectionStart = input.selectionStart, selectionEnd = input.selectionEnd, value = input.value;
-        var isCollapsed = selectionStart === selectionEnd;
         var authorLink = info.authorLink, authorName = info.authorName, link = info.link, type = info.type;
-        var before = value.slice(0, selectionStart + 1);
-        var after = value.slice(selectionEnd - 1);
+        var before = value.slice(0, selectionStart);
+        var after = value.slice(selectionEnd);
         var authorRef = authorLink ? "[".concat(authorName, "](").concat(authorLink, ")") : authorName;
         var postRef = "".concat(authorRef ? "".concat(authorRef, "'s ") : "", "[").concat(type, "](").concat(link, ")");
-        input.value = isCollapsed ? value + postRef : before + postRef + after;
+        input.value = before + postRef + after;
         input.dispatchEvent(new Event("input"));
         document.dispatchEvent(new CustomEvent("".concat(scriptName, "-close-config")));
     };
