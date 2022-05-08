@@ -1,6 +1,6 @@
 {
     "name": "@userscripters/magic-answer-references",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "description": "Make referencing other answers easier",
     "scripts": {
         "test": "mocha",
