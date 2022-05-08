@@ -7,6 +7,14 @@ type StacksTextInputOptions = {
     value?: string;
 };
 
+type StacksIconOptions = {
+    classes?: string[];
+    hidden?: boolean;
+    namespace?: string;
+    width?: number;
+    height?: number;
+};
+
 declare const Store: typeof import("@userscripters/storage");
 
 type StacksButtonOptions = {
@@ -47,7 +55,7 @@ type GetPostOptions = {
     site?: string;
 } | { [x: string]: string; };
 
-window.addEventListener("load", async () => {
+window.addEventListener("load", () => {
     const scriptName = "magic-answer-references";
 
     const API_BASE = "https://api.stackexchange.com";
@@ -83,12 +91,27 @@ window.addEventListener("load", async () => {
         });
     };
 
-    type StacksIconOptions = {
-        classes?: string[];
-        hidden?: boolean;
-        namespace?: string;
-        width?: number;
-        height?: number;
+    /**
+     * @summary type-guard filter removing falsy elements
+     * @param el collection element
+     */
+    const onlyTruthy = <T>(el: T): el is Exclude<T, 0 | undefined | null | false | ""> => !!el;
+
+    /**
+     * @summary type-guard for narrowing {@link Node}s to {@link Element}s
+     * @param node {@link Node} to check
+     */
+    const isElementNode = (node: Node): node is Element => node.nodeType === node.ELEMENT_NODE;
+
+    /**
+     * @summary looks up an {@link Element} in a {@link NodeList}
+     * @param nodes list of {@link Node}s to lookup
+     * @param selector selector to match against
+     */
+    const findElementInNodeList = (nodes: NodeList, selector: string) => {
+        for (const node of nodes) {
+            if (isElementNode(node) && node.matches(selector)) return node;
+        }
     };
 
     /**
@@ -717,10 +740,11 @@ window.addEventListener("load", async () => {
 
     /**
      * @summary converts {@link PostInfo} to a table row
+     * @param configModal configuration modal
      * @param id post id
      * @param info post info
      */
-    const postInfoToTableRowConfig = (id: string, info: PostInfo) => {
+    const postInfoToTableRowConfig = (configModal: HTMLElement, id: string, info: PostInfo) => {
         const { authorName, authorLink, body, container, type, votes } = info;
 
         const author = authorLink && authorName ?
@@ -744,6 +768,22 @@ window.addEventListener("load", async () => {
 
         actionBtn.addEventListener("click", (ev) => {
             ev.preventDefault(); // otherwise, clicking will scroll
+
+            const { currentEditorId } = configModal.dataset;
+            if (!currentEditorId) {
+                console.debug(`[${scriptName}] missing editor (${currentEditorId})`);
+                return;
+            }
+
+            const currentEditor = document.getElementById(currentEditorId);
+            if (!currentEditor) return;
+
+            const postTextInput = currentEditor.querySelector<HTMLTextAreaElement>(".js-post-body-field");
+            if (!postTextInput) {
+                console.debug(`[${scriptName}] missing editor input (${currentEditor})`);
+                return;
+            }
+
             insertPostReference(postTextInput, info);
         });
 
@@ -753,29 +793,44 @@ window.addEventListener("load", async () => {
         };
     };
 
+    /**
+     * @summary adds a ref button to a post editor menu
+     * @param editor post editor container
+     */
+    const addRefButton = async (editor: Element | null | undefined) => {
+        if (!editor) {
+            console.debug(`[${scriptName}] missing post editor`);
+            return;
+        }
+
+        const menu = await waitForSelector(".wmd-button-row", editor);
+        if (!menu) {
+            console.debug(`[${scriptName}] missing editor menu`);
+            return;
+        }
+
+        const snippetBtn = await waitForSelector(".wmd-snippet-button", editor);
+        if (!snippetBtn) {
+            console.debug(`[${scriptName}] missing editor snippet button`);
+            return;
+        }
+
+        const refBtn = makeEditorButton(
+            `${scriptName}-reference`,
+            "iconMergeSm",
+            "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z",
+            "Reference a post",
+            () => {
+                configModal.dataset.currentEditorId = editor.id;
+                Stacks.showModal(configModal);
+            }
+        );
+
+        snippetBtn.after(refBtn);
+    };
+
     const editor = document.getElementById("post-editor");
-    if (!editor) {
-        console.debug(`[${scriptName}] missing post editor`);
-        return;
-    }
-
-    const menu = await waitForSelector("#wmd-button-row");
-    if (!menu) {
-        console.debug(`[${scriptName}] missing editor menu`);
-        return;
-    }
-
-    const snippetBtn = await waitForSelector("#wmd-snippet-button");
-    if (!snippetBtn) {
-        console.debug(`[${scriptName}] missing editor snippet button`);
-        return;
-    }
-
-    const postTextInput = await waitForSelector<HTMLTextAreaElement>("#wmd-input");
-    if (!postTextInput) {
-        console.debug(`[${scriptName}] missing editor input`);
-        return;
-    }
+    addRefButton(editor);
 
     const configModal = makeStacksModal(
         `${scriptName}-config`, "Reference a Post",
@@ -790,7 +845,7 @@ window.addEventListener("load", async () => {
             classes: [scriptName, "hmx2"],
             headers: ["Type", "Author", "Score", "Actions"],
             rows: [...posts].map(([id, info]) => {
-                return postInfoToTableRowConfig(id, info);
+                return postInfoToTableRowConfig(configModal, id, info);
             }),
             sortable: true
         });
@@ -827,7 +882,7 @@ window.addEventListener("load", async () => {
 
                 const { body = "", link, post_type, score, owner } = post;
 
-                const { cells, data } = postInfoToTableRowConfig(id, {
+                const { cells, data } = postInfoToTableRowConfig(configModal, id, {
                     body,
                     id,
                     link,
@@ -860,20 +915,29 @@ window.addEventListener("load", async () => {
 
     document.body.append(configModal);
 
-    const refBtn = makeEditorButton(
-        `${scriptName}-reference`,
-        "iconMergeSm",
-        "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z",
-        "Reference a post",
-        () => Stacks.showModal(configModal)
-    );
-
-    snippetBtn.after(refBtn);
-
     document.addEventListener(
         `${scriptName}-close-config`,
         () => Stacks.hideModal(configModal)
     );
+
+    const obs = new MutationObserver(async (records) => {
+        const inserts = records.flatMap(({ addedNodes }) => addedNodes);
+
+        const promisedInserts = inserts.map((inserted) => {
+            const wrapper = findElementInNodeList(inserted, ".inline-editor");
+            return wrapper && waitForSelector(".js-post-editor", wrapper);
+        });
+
+        const promisedEditors = await Promise.all(promisedInserts);
+        promisedEditors
+            .filter(onlyTruthy)
+            .forEach(addRefButton);
+    });
+
+    obs.observe(document, {
+        childList: true,
+        subtree: true
+    });
 
     appendStyles();
 }, { once: true });

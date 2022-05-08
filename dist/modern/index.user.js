@@ -35,7 +35,7 @@
 // ==/UserScript==
 
 "use strict";
-window.addEventListener("load", async () => {
+window.addEventListener("load", () => {
     const scriptName = "magic-answer-references";
     const API_BASE = "https://api.stackexchange.com";
     const API_VER = 2.3;
@@ -58,6 +58,14 @@ window.addEventListener("load", async () => {
                 attributes: true
             });
         });
+    };
+    const onlyTruthy = (el) => !!el;
+    const isElementNode = (node) => node.nodeType === node.ELEMENT_NODE;
+    const findElementInNodeList = (nodes, selector) => {
+        for (const node of nodes) {
+            if (isElementNode(node) && node.matches(selector))
+                return node;
+        }
     };
     const makeStacksIcon = (name, pathConfig, options = {}) => {
         const { classes = [], hidden = false, namespace = "http://www.w3.org/2000/svg", height = 18, width = 18 } = options;
@@ -421,7 +429,7 @@ window.addEventListener("load", async () => {
         type: "outlined",
         muted: true
     };
-    const postInfoToTableRowConfig = (id, info) => {
+    const postInfoToTableRowConfig = (configModal, id, info) => {
         const { authorName, authorLink, body, container, type, votes } = info;
         const author = authorLink && authorName ?
             makeAnchor(authorLink, authorName) :
@@ -438,6 +446,19 @@ window.addEventListener("load", async () => {
         const actionBtn = makeStacksButton(`${scriptName}-ref-${id}`, "ref", actionBtnConfig);
         actionBtn.addEventListener("click", (ev) => {
             ev.preventDefault();
+            const { currentEditorId } = configModal.dataset;
+            if (!currentEditorId) {
+                console.debug(`[${scriptName}] missing editor (${currentEditorId})`);
+                return;
+            }
+            const currentEditor = document.getElementById(currentEditorId);
+            if (!currentEditor)
+                return;
+            const postTextInput = currentEditor.querySelector(".js-post-body-field");
+            if (!postTextInput) {
+                console.debug(`[${scriptName}] missing editor input (${currentEditor})`);
+                return;
+            }
             insertPostReference(postTextInput, info);
         });
         return {
@@ -445,26 +466,29 @@ window.addEventListener("load", async () => {
             data: { body, id }
         };
     };
+    const addRefButton = async (editor) => {
+        if (!editor) {
+            console.debug(`[${scriptName}] missing post editor`);
+            return;
+        }
+        const menu = await waitForSelector(".wmd-button-row", editor);
+        if (!menu) {
+            console.debug(`[${scriptName}] missing editor menu`);
+            return;
+        }
+        const snippetBtn = await waitForSelector(".wmd-snippet-button", editor);
+        if (!snippetBtn) {
+            console.debug(`[${scriptName}] missing editor snippet button`);
+            return;
+        }
+        const refBtn = makeEditorButton(`${scriptName}-reference`, "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", () => {
+            configModal.dataset.currentEditorId = editor.id;
+            Stacks.showModal(configModal);
+        });
+        snippetBtn.after(refBtn);
+    };
     const editor = document.getElementById("post-editor");
-    if (!editor) {
-        console.debug(`[${scriptName}] missing post editor`);
-        return;
-    }
-    const menu = await waitForSelector("#wmd-button-row");
-    if (!menu) {
-        console.debug(`[${scriptName}] missing editor menu`);
-        return;
-    }
-    const snippetBtn = await waitForSelector("#wmd-snippet-button");
-    if (!snippetBtn) {
-        console.debug(`[${scriptName}] missing editor snippet button`);
-        return;
-    }
-    const postTextInput = await waitForSelector("#wmd-input");
-    if (!postTextInput) {
-        console.debug(`[${scriptName}] missing editor input`);
-        return;
-    }
+    addRefButton(editor);
     const configModal = makeStacksModal(`${scriptName}-config`, "Reference a Post", { minWidth: 25 });
     const configForm = configModal.querySelector("form");
     if (configForm) {
@@ -473,7 +497,7 @@ window.addEventListener("load", async () => {
             classes: [scriptName, "hmx2"],
             headers: ["Type", "Author", "Score", "Actions"],
             rows: [...posts].map(([id, info]) => {
-                return postInfoToTableRowConfig(id, info);
+                return postInfoToTableRowConfig(configModal, id, info);
             }),
             sortable: true
         });
@@ -504,7 +528,7 @@ window.addEventListener("load", async () => {
                     return;
                 apiPostCache.set(id, post);
                 const { body = "", link, post_type, score, owner } = post;
-                const { cells, data } = postInfoToTableRowConfig(id, {
+                const { cells, data } = postInfoToTableRowConfig(configModal, id, {
                     body,
                     id,
                     link,
@@ -531,8 +555,21 @@ window.addEventListener("load", async () => {
         configForm.append(refTableWrapper, searchWrapper);
     }
     document.body.append(configModal);
-    const refBtn = makeEditorButton(`${scriptName}-reference`, "iconMergeSm", "M5.45 3H1v2h3.55l3.6 4-3.6 4H1v2h4.45l4.5-5H13v3l4-4-4-4v3H9.95l-4.5-5Z", "Reference a post", () => Stacks.showModal(configModal));
-    snippetBtn.after(refBtn);
     document.addEventListener(`${scriptName}-close-config`, () => Stacks.hideModal(configModal));
+    const obs = new MutationObserver(async (records) => {
+        const inserts = records.flatMap(({ addedNodes }) => addedNodes);
+        const promisedInserts = inserts.map((inserted) => {
+            const wrapper = findElementInNodeList(inserted, ".inline-editor");
+            return wrapper && waitForSelector(".js-post-editor", wrapper);
+        });
+        const promisedEditors = await Promise.all(promisedInserts);
+        promisedEditors
+            .filter(onlyTruthy)
+            .forEach(addRefButton);
+    });
+    obs.observe(document, {
+        childList: true,
+        subtree: true
+    });
     appendStyles();
 }, { once: true });
