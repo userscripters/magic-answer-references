@@ -6,7 +6,7 @@
 | Name | @userscripters/magic-answer-references |
 | Description | Make referencing other answers easier |
 | License | [GPL-3.0-or-later](https://spdx.org/licenses/GPL-3.0-or-later) |
-| Version | 2.1.1 |
+| Version | 2.2.0 |
 
 Referencing other posts properly by hand is tedious: one has to link to users' profiles as usernames are subject to change any time, as well as to their post. Magic Answer References userscript makes all this as easy as clicking a button! It adds a button to the editor (right next to the Stacks Snippet one) that opens a referencing modal.
 
