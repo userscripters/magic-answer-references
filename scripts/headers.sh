@@ -3,7 +3,7 @@
 dist="dist"
 output=$dist"/headers.js"
 
-generate tampermonkey \
+generate-headers tampermonkey \
     -o $output \
     -m all meta "https://domain/questions/*" \
     --require "https://github.com/userscripters/storage/raw/master/dist/browser.js" \
