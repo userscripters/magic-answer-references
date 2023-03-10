@@ -808,9 +808,9 @@ window.addEventListener("load", () => {
             return;
         }
 
-        const snippetBtn = await waitForSelector(".wmd-snippet-button", editor);
-        if (!snippetBtn) {
-            console.debug(`[${scriptName}] missing editor snippet button`);
+        const spacer2 = await waitForSelector(".wmd-spacer2", editor);
+        if (!spacer2) {
+            console.debug(`[${scriptName}] missing .wmd-spacer2 element`);
             return;
         }
 
@@ -825,7 +825,7 @@ window.addEventListener("load", () => {
             }
         );
 
-        snippetBtn.after(refBtn);
+        spacer2.before(refBtn);
     };
 
     const editor = document.getElementById("post-editor");
